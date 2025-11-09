@@ -1,0 +1,24 @@
+[flake8]
+# ----------------------------------------------------------------------
+# 기본 스타일 가이드 (PEP8 기반)
+# ----------------------------------------------------------------------
+
+# E302/E305 : 클래스·함수 앞뒤 빈 줄 2줄 강제 → 연구 코드에서는 과함
+# E402 : import 순서(함수 안에서 import) 허용
+# W503 : line break before binary operator (PEP8 수정안과 충돌 방지)
+# E731 : lambda 표현식 사용 허용
+ignore = E302, E305, E402, W503, E731, E401
+
+# 한 줄 최대 길이 (PEP8=79 → GPU 실험 로그 등 긴 문자열 허용)
+max-line-length = 120
+
+# __pycache__, data, wandb 로그 폴더 제외
+exclude = 
+    .git,
+    __pycache__,
+    data,
+    wandb,
+    runs
+
+# cyclomatic complexity (기본 10 → 20 으로 완화)
+max-complexity = 20

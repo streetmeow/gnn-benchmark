@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="user@165.194.17.209:7789 key (4)" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="user@165.194.17.209:7789 key (8)" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="user@165.194.17.209:7789 key">
         <serverdata>
@@ -24,6 +24,34 @@
         </serverdata>
       </paths>
       <paths name="user@165.194.17.209:7789 key (4)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/user/dmais/joohee/benchmark" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="user@165.194.17.209:7789 key (5)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/user/dmais/joohee/benchmark" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="user@165.194.17.209:7789 key (6)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/user/dmais/joohee/benchmark" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="user@165.194.17.209:7789 key (7)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/user/dmais/joohee/benchmark" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="user@165.194.17.209:7789 key (8)">
         <serverdata>
           <mappings>
             <mapping deploy="/home/user/dmais/joohee/benchmark" local="$PROJECT_DIR$" />

@@ -1,17 +1,13 @@
 {
-  // 🔧 타입 체킹 강도 설정
-  "typeCheckingMode": "basic",               // (기본값은 "strict"; PyTorch엔 과함)
-  
-  // 🔕 자주 오탐하는 경고 무시
-  "reportMissingImports": "none",            // import torch_geometric 등에서 오탐 방지
+  "typeCheckingMode": "strict",
+  "reportMissingImports": "warn",
   "reportMissingTypeStubs": "none",
-  "reportUnknownMemberType": "none",
+  "reportUnknownMemberType": "warn",
   "reportUnknownVariableType": "none",
   "reportUnknownParameterType": "none",
   "reportPrivateImportUsage": "none",
 
-  // 🧱 프로젝트 구조 인식
-  "include": ["."],                          // 현재 디렉토리 전체 검사
+  "include": ["."],
   "exclude": [
     "**/__pycache__",
     "**/wandb",
@@ -19,11 +15,9 @@
     "**/data"
   ],
 
-  // 🔍 torch, pyg 의 동적 속성 무시
   "reportUntypedBaseClass": "none",
   "reportAttributeAccessIssue": "none",
   "reportGeneralTypeIssues": "none",
 
-  // 💡 편의: forward() 등에서의 Any 허용
-  "useLibraryCodeForTypes": true
+  "useLibraryCodeForTypes": false
 }

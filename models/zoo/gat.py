@@ -2,6 +2,7 @@
 from torch import nn
 from torch_geometric.nn import GATConv
 
+
 class GAT(nn.Module):
     def __init__(self, in_dim, hidden_dim, out_dim, heads=8, num_layers=2, dropout=0.6, concat=True):
         super().__init__()

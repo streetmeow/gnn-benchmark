@@ -1,0 +1,11 @@
+# configs/experiment/base.yaml
+seed: 42
+device: cuda
+
+output_dir: ./outputs
+
+use_wandb: true
+wandb:
+  project: gnn-bench
+  entity: null     # optional
+  run_name: null   # hydra가 timestamp로 자동 생성해도 OK

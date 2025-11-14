@@ -3,6 +3,7 @@ import os
 import wandb
 from datetime import datetime
 from utils.config_io import dump_config
+import hydra
 
 class WandbRun:
     """Thin wrapper to make wandb optional (auto-disabled if no API key or disabled in cfg)."""

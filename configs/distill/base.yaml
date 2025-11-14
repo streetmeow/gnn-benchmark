@@ -1,0 +1,9 @@
+# configs/distill/base.yaml
+temperature: 2.0
+alpha: 0.7
+kd_loss: kl           # kl | mse | cosine 등
+teacher_path: ./ckpt/teacher.pt
+
+feature_kd: false
+structure_kd: true
+freeze_teacher: true

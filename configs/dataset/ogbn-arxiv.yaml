@@ -1,0 +1,8 @@
+# configs/dataset/ogbn-arxiv.yaml
+name: ogbn-arxiv
+type: ogb
+root: ./dataset
+num_classes: 40
+
+normalize_features: true
+use_sampler: true

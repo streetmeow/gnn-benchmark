@@ -1,0 +1,6 @@
+name: kd_basic
+epochs: 200
+lr: 0.003
+weight_decay: 0.0
+use_distill: true
+kd_type: basic

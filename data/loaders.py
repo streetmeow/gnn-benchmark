@@ -8,18 +8,18 @@ from torch_geometric.loader import NeighborSampler
 
 
 class GNNDataLoader:
-    def __init__(self, name: str, root: str = "./dataset", use_sampler: bool = False,
-                 sampler_sizes: tuple = (15, 10, 5), sampler_batch_size: int = 1024, sampler_num_workers: int = 4):
-        self.name = name.lower()
-        self.root = root
-        self.use_sampler = use_sampler
-        self.sampler_sizes = sampler_sizes
-        self.sampler_batch_size = sampler_batch_size
-        self.sampler_num_workers = sampler_num_workers
+    def __init__(self, cfg_dataset, cfg_sampler):
+        self.name = cfg_dataset.name.lower()
+        self.root = cfg_dataset.root
+        self.use_sampler = cfg_dataset.use_sampler
+        self.sampler_sizes = cfg_sampler.sizes
+        self.sampler_batch_size = cfg_sampler.batch_size
+        self.sampler_num_workers = cfg_sampler.num_workers
         self.data = None
         self.split_idx = None
         self.num_classes = None
         self.sampler = None
+        self.shuffle_sampler = cfg_sampler.shuffle
 
     def load(self):
         if self.name in ["cora", "citeseer", "pubmed"]:

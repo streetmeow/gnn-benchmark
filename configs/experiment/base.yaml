@@ -1,7 +1,4 @@
 # configs/experiment/base.yaml
-seed: 42
-device: cuda
-
 output_dir: ./outputs
 
 use_wandb: true

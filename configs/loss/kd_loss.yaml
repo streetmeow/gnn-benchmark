@@ -1,0 +1,9 @@
+temperature: 3.0
+
+losses:
+  - type: logits
+    weight: 0.5
+  - type: hidden
+    weight: 0.3
+  - type: attention
+    weight: 0.2

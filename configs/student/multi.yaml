@@ -1,0 +1,12 @@
+students:
+  - model: tinygnn
+    hidden_dim: 64
+    outputs: ["logits", "structure"]
+
+  - model: mlp
+    hidden_dim: 128
+    outputs: ["logits"]
+
+merge:
+  type: concat_linear
+  out_dim: 128

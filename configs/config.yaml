@@ -2,7 +2,10 @@
 defaults:
   - experiment: base
   - dataset: ogbn-arxiv
-  - model: gcn
+  - teacher: none
+  - student: single
+  - loss: none
   - train: base
   - sampler: default
-  - distill: base
+seed: 42
+gpu_ids: 2

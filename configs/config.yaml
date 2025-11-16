@@ -1,11 +1,8 @@
 # configs/config.yaml
 defaults:
-  - experiment: base
+  - experiment: architectures
   - dataset: ogbn-arxiv
-  - teacher: none
-  - student: single
-  - loss: none
-  - train: base
+  - train: architectures
   - sampler: default
 seed: 42
 gpu_ids: 2

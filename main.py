@@ -1,12 +1,10 @@
 import os
 import hydra
 from omegaconf import DictConfig
-from data import GNNDataLoader
+from experiment.data import GNNDataLoader
 
 
 @hydra.main(version_base="1.2", config_path="configs", config_name="config")
-
-
 def main(cfg: DictConfig):
     os.environ["CUDA_VISIBLE_DEVICES"] = str(cfg.gpu_id)
     # Dataset build

@@ -1,8 +1,0 @@
-teachers:
-  - model: gcn
-    ckpt: ./ckpts/gcn.pt
-    frozen: true
-    outputs: ["logits"]
-
-merge:
-  type: none

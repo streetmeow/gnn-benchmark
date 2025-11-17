@@ -1,1 +1,1 @@
-from experiment.data.loaders import GNNDataLoader
+from .loaders import GNNDataLoader

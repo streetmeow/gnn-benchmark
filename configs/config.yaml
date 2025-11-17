@@ -1,8 +1,9 @@
 # configs/config.yaml
 defaults:
-  - experiment: architectures
+  - experiment: base
   - dataset: ogbn-arxiv
-  - train: architectures
+  - train: kd_train
   - sampler: default
+  - model: model_base
 seed: 42
-gpu_ids: 2
+gpu_id: 2

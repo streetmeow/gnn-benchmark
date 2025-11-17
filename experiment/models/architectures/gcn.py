@@ -1,5 +1,5 @@
 from torch_geometric.nn import GCNConv
-from experiment.models import BaseNN
+from experiment.models.BaseNN import BaseNN
 
 
 class GCN(BaseNN):

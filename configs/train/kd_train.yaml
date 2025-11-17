@@ -1,6 +1,7 @@
 name: kd_basic
-epochs: 200
+epochs: 20
 lr: 0.003
 weight_decay: 0.0
-use_distill: true
+use_distill: false
+use_scheduler: true
 kd_type: basic

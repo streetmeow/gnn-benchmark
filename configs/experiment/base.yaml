@@ -1,8 +1,8 @@
 # configs/experiment/architectures.yaml
 output_dir: ./outputs
-
-use_wandb: true
-metrics: ["accuracy", "f1_macro"]
+name: simple
+use_wandb: false
+metrics: ["acc", "f1_macro", "f1_micro", "recall"]
 wandb:
   project: gnn-bench
   entity: null     # optional

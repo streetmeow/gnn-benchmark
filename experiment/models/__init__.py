@@ -1,3 +1,3 @@
-from experiment.models import build_model
-
-__all__ = ['build_model']
+from .BaseNN import BaseNN
+from .build_model import build_model
+__all__ = ["BaseNN", "build_model"]

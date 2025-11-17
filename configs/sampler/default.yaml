@@ -1,7 +1,5 @@
-students:
-  - model: tinygnn
-    hidden_dim: 64
-    outputs: ["logits"]
-
-merge:
-  type: none
+sizes: [15, 10, 5]
+#num_neighbors: [15, 10, 5]
+batch_size: 1024
+num_workers: 8
+shuffle: true

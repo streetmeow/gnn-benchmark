@@ -1,25 +1,24 @@
-
 import torch
 from torch_geometric.datasets import Planetoid, Actor
 from ogb.nodeproppred import PygNodePropPredDataset
-from torch_geometric.loader import NeighborSampler
-# from torch_geometric.data.data import DataEdgeAttr, DataTensorAttr, GlobalStorage
-# from torch.serialization import add_safe_globals
+from torch_geometric.loader import NeighborLoader
+from omegaconf import DictConfig
 
 
 class GNNDataLoader:
-    def __init__(self, cfg_dataset, cfg_sampler):
+    def __init__(self, cfg_dataset):
         self.name = cfg_dataset.name.lower()
         self.root = cfg_dataset.root
         self.use_sampler = cfg_dataset.use_sampler
-        self.sampler_sizes = cfg_sampler.sizes
-        self.sampler_batch_size = cfg_sampler.batch_size
-        self.sampler_num_workers = cfg_sampler.num_workers
+
         self.data = None
-        self.split_idx = None
         self.num_classes = None
-        self.sampler = None
-        self.shuffle_sampler = cfg_sampler.shuffle
+
+    @staticmethod
+    def idx_to_mask(idx: torch.Tensor, size: int) -> torch.Tensor:
+        mask = torch.zeros(size, dtype=torch.bool)
+        mask[idx] = True
+        return mask
 
     def load(self):
         if self.name in ["cora", "citeseer", "pubmed"]:
@@ -27,62 +26,79 @@ class GNNDataLoader:
         elif self.name == "actor":
             self._load_actor()
         elif self.name in ["ogbn-arxiv", "ogbn-products"]:
-            self._load_ogbn_arxiv()
+            self._load_ogbn()
         else:
             raise ValueError(f"Unsupported dataset name: {self.name}")
-        if self.use_sampler:
-            self.get_sampler()
-        return self.data, self.split_idx, self.num_classes, self.sampler
+
+        return self.data, self.num_classes
 
     def _load_planetoid(self):
         dataset = Planetoid(root=f"{self.root}/{self.name}", name=self.name.capitalize())
         data = dataset[0]
-        splits = {
-            "train": torch.where(data.train_mask)[0],
-            "valid": torch.where(data.val_mask)[0],
-            "test":  torch.where(data.test_mask)[0],
-        }
         self.data = data
-        self.split_idx = splits
         self.num_classes = dataset.num_classes
 
-    def _load_ogbn_arxiv(self):
-        # add_safe_globals([DataEdgeAttr, DataTensorAttr, GlobalStorage])
+    def _load_ogbn(self):
         dataset = PygNodePropPredDataset(name=self.name, root=self.root)
-        self.data = dataset[0]
+        data = dataset[0]
         split_idx = dataset.get_idx_split()
-        self.split_idx = split_idx
+
+        # 'idx_to_mask' (정적 메서드)를 호출
+        data.train_mask = self.idx_to_mask(split_idx["train"], data.num_nodes)
+        data.val_mask = self.idx_to_mask(split_idx["valid"], data.num_nodes)
+        data.test_mask = self.idx_to_mask(split_idx["test"], data.num_nodes)
+
+        self.data = data
         self.num_classes = dataset.num_classes
 
     def _load_actor(self):
         dataset = Actor(root=f"{self.root}/actor")
         data = dataset[0]
-
         num_nodes = data.num_nodes
         perm = torch.randperm(num_nodes)
 
         train_end = int(0.6 * num_nodes)
         val_end = int(0.8 * num_nodes)
 
-        self.split_idx = {
-            "train": perm[:train_end],
-            "valid": perm[train_end:val_end],
-            "test": perm[val_end:]
-        }
+        data.train_mask = self.idx_to_mask(perm[:train_end], num_nodes)
+        data.val_mask = self.idx_to_mask(perm[train_end:val_end], num_nodes)
+        data.test_mask = self.idx_to_mask(perm[val_end:], num_nodes)
+
         self.data = data
         self.num_classes = dataset.num_classes
 
-    def get_sampler(self):
-        data = self.data
-        split_idx = self.split_idx
-        if "train" not in split_idx:
-            raise ValueError("No training split available for sampler.")
-        train_nodes = split_idx["train"]
-        self.sampler = NeighborSampler(
-            data.edge_index,
-            node_idx=train_nodes,
-            sizes=list(self.sampler_sizes),
-            batch_size=self.sampler_batch_size,
-            shuffle=True,
-            num_workers=self.sampler_num_workers,
+    def get_train_sampler(self, cfg_sampler: DictConfig) -> NeighborLoader:
+        """훈련용 (train_mask) 샘플러 생성 (셔플 O)"""
+        train_nodes = torch.where(self.data.train_mask)[0]
+        return NeighborLoader(
+            self.data,
+            input_nodes=train_nodes,
+            num_neighbors=list(cfg_sampler.sizes), # ⬅️ GCN/GIN에 따라 리스트가 달라짐
+            batch_size=cfg_sampler.batch_size,
+            shuffle=cfg_sampler.get("shuffle", True),
+            num_workers=cfg_sampler.get("num_workers", 0)
+        )
+
+    def get_valid_sampler(self, cfg_sampler: DictConfig) -> NeighborLoader:
+        """검증용 (val_mask) 샘플러 생성 (셔플 X)"""
+        valid_nodes = torch.where(self.data.val_mask)[0]
+        return NeighborLoader(
+            self.data,
+            input_nodes=valid_nodes,
+            num_neighbors=list(cfg_sampler.sizes),
+            batch_size=cfg_sampler.batch_size,
+            shuffle=False,
+            num_workers=cfg_sampler.get("num_workers", 0)
+        )
+
+    def get_test_sampler(self, cfg_sampler: DictConfig) -> NeighborLoader:
+        """테스트용 (test_mask) 샘플러 생성 (셔플 X)"""
+        test_nodes = torch.where(self.data.test_mask)[0]
+        return NeighborLoader(
+            self.data,
+            input_nodes=test_nodes,
+            num_neighbors=list(cfg_sampler.sizes),
+            batch_size=cfg_sampler.batch_size,
+            shuffle=False,
+            num_workers=cfg_sampler.get("num_workers", 0)
         )

@@ -1,5 +1,5 @@
 from torch_geometric.nn import GATConv
-from experiment.models import BaseNN
+from experiment.models.BaseNN import BaseNN
 
 
 class GAT(BaseNN):

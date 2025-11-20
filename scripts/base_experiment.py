@@ -12,14 +12,17 @@ from abc import ABC, abstractmethod
 # (파일 경로 '..'는 네 프로젝트 구조에 맞게 조정해야 할 수 있음)
 from experiment.data import GNNDataLoader
 from experiment.analyze import Evaluator
+from .logger import Logger
+import os
 
 log = logging.getLogger(__name__)
 
 
 class BaseExperiment(ABC):
 
-    def __init__(self, cfg: DictConfig):
+    def __init__(self, cfg: DictConfig, logger: Logger):
         self.cfg = cfg
+        self.logger = logger
         self.device = self._setup_device()
 
         # 1. 공통 로직: 데이터 로드
@@ -86,9 +89,10 @@ class BaseExperiment(ABC):
 
     def _run_final_test(self):
         log.info("--- 🏁 All training complete. Loading best model for final test. ---")
+        best_model_path = os.path.join(self.logger.output_dir, "best_model.pth")
 
         try:
-            self.student_model.load_state_dict(torch.load("best_model.pth", map_location=self.device))
+            self.student_model.load_state_dict(torch.load(best_model_path, map_location=self.device))
         except FileNotFoundError:
             log.warning("Could not find 'best_model.pth'. Testing with current model state.")
 
@@ -99,9 +103,7 @@ class BaseExperiment(ABC):
         )
 
         log.info(f"Final Test Results: {test_results}")
-        # (WandB 로깅)
-        # if self.logger:
-        #     self.logger.log({"test": test_results})
+        self.logger.save_final_results(test_results)
 
     def run(self):
         log.info(f"--- 🚀 Starting Experiment: {self.__class__.__name__} ---")

@@ -1,9 +1,0 @@
-# configs/experiment/architectures.yaml
-output_dir: ./outputs
-name: simple
-use_wandb: false
-metrics: ["acc", "f1_macro", "f1_micro", "recall"]
-wandb:
-  project: gnn-bench
-  entity: null     # optional
-  run_name: null   # hydra가 timestamp로 자동 생성해도 OK

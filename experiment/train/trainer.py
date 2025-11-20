@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch_geometric.data import Data
-from torch.utils.data import IterableDataset  # PyG NeighborLoader의 부모
+from scripts import Logger
 from abc import ABC, abstractmethod
 from tqdm import tqdm
 from typing import Literal, Optional, Iterable
@@ -25,7 +25,7 @@ class BaseTrainer(ABC):
     """
 
     def __init__(self, model: nn.Module, optimizer: optim.Optimizer, evaluator: Evaluator, device: torch.device,
-                 scheduler: optim.lr_scheduler._LRScheduler = None, logger=None):
+                 scheduler: optim.lr_scheduler._LRScheduler = None, logger: Optional[Logger] = None):
 
         self.model = model
         self.optimizer = optimizer
@@ -121,8 +121,8 @@ class BaseTrainer(ABC):
             log_data["epoch"] = epoch
             log_data["lr"] = self.optimizer.param_groups[0]['lr']
 
-            # if self.logger:
-            #     self.logger.log(log_data)
+            if self.logger:
+                self.logger.log_epoch_metrics(log_data, step=epoch)
 
             print(
                 f"Epoch: {epoch:03d} | Train Loss: {train_metrics['loss_avg']:.4f} | Valid Acc: {valid_metrics['acc']:.4f}")
@@ -139,5 +139,8 @@ class BaseTrainer(ABC):
 
     def _save_checkpoint(self, path: str):
         """(임시) 모델 체크포인트 저장"""
-        torch.save(self.model.state_dict(), path)
+        if self.logger:
+            self.logger.save_checkpoint(self.model, filename=path)
+        else:
+            torch.save(self.model.state_dict(), path)
         print(f"Checkpoint saved to {path}")

@@ -1,0 +1,10 @@
+use_wandb: true
+entity: "jooheecho-ai-chung-ang-university"
+project: "GNN-Benchmark"
+
+experiment_strategy_name: "TestRun"
+source_files:
+  - experiment/models/architectures/graphsage.py
+  - experiment/train/trainers/ce_trainer.py
+  - scripts/experiments/simple_experiment.py
+  - main.py

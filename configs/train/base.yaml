@@ -2,8 +2,8 @@ name: kd_basic
 
 # 공통 하이퍼파라미터
 epochs: 200
-lr: 0.003
-weight_decay: 0.0
+lr: 0.01
+weight_decay: 5e-4
 
 # distillation 여부
 use_distill: true

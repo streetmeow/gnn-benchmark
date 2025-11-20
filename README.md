@@ -20,12 +20,30 @@ pip install pyg-lib torch-scatter torch-sparse torch-cluster \
     
 pip install -r requirements.txt
 
-# run with a Python config (dynamic allowed)
-python scripts/base_experiment.py configs/experiment_cora_gcn.py
-python scripts/base_experiment.py configs/experiment_cora_gat.py
-python scripts/base_experiment.py configs/experiment_arxiv_sage.py
 
 numactl --physcpubind=1-6 python main.py
+```
 
 
+## Docker Execution
+```bash
+docker compose up -d
+docker compose exec experiment /bin/bash
+numactl --physcpubind=1-6 python main.py
+
+# 종료 시
+exit 
+
+# 컨테이너 중지 및 재시작
+docker compose stop
+docker compose start
+
+# 컨테이너 종료
+docker compose down
+
+# 업데이트
+export DOCKER_TOKEN=your_dockerhub_token_here
+echo "$DOCKER_TOKEN" | docker login -u streetmeow --password-stdin
+docker push streetmeow/gnn-bench:v1.1
+unset DOCKER_TOKEN
 ```

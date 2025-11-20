@@ -1,0 +1,4 @@
+# configs/experiment/architectures.yaml
+output_dir: ./outputs
+name: simple
+metrics: ["acc", "f1_macro", "f1_micro", "recall"]

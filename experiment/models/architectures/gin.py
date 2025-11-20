@@ -1,6 +1,6 @@
 import torch.nn as nn
 from torch_geometric.nn import GINConv
-from experiment.models.BaseNN import BaseNN
+from experiment.models.base_nn import BaseNN
 
 
 class GIN(BaseNN):

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  experiment:
+    image: streetmeow/gnn-bench:v1.1
+    restart: unless-stopped
+
+    container_name: jhc-env-0
+
+    volumes:
+      - .:/app
+
+    # GPU 할당
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    # 환경 변수 (WandB 키 전달)
+    environment:
+      - WANDB_API_KEY=${WANDB_API_KEY}
+      - PYTHONNOUSERSITE=1
+
+    # 메모리 설정 & 유지
+    ipc: host
+    tty: true
+    stdin_open: true
+    command: /bin/bash

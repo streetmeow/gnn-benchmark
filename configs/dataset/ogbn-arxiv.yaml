@@ -1,4 +1,0 @@
-# configs/dataset/ogbn-arxiv.yaml
-name: ogbn-products
-root: ./dataset
-use_sampler: true

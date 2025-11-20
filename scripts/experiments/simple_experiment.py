@@ -7,7 +7,7 @@ from omegaconf import DictConfig
 
 # --- '현장 감독' 템플릿과 '작업자' 임포트 ---
 from scripts import BaseExperiment
-from experiment.train.trainers.CETrainer import CETrainer
+from experiment.train import CETrainer
 from experiment.models import build_model
 from experiment.analyze import Metrics, Evaluator
 import torch.nn as nn
@@ -16,8 +16,8 @@ log = logging.getLogger(__name__)
 
 
 class SimpleExperiment(BaseExperiment):
-    def __init__(self, cfg: DictConfig):
-        super().__init__(cfg)
+    def __init__(self, cfg: DictConfig, logger):
+        super().__init__(cfg, logger)
 
     def _build_models_and_evaluator(self):
         cfg = self.cfg
@@ -67,8 +67,8 @@ class SimpleExperiment(BaseExperiment):
             optimizer=optimizer,
             evaluator=self.evaluator,
             device=self.device,
-            scheduler=scheduler
-            # logger=... (추후 wandb)
+            scheduler=scheduler,
+            logger=self.logger
         )
 
         # BaseTrainer의 공통 'run' 메서드 호출

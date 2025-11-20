@@ -9,8 +9,8 @@ import logging
 
 # --- '현장 감독' (Experiment) 클래스들을 임포트 ---
 # (이 파일들은 experiment/ 디렉토리에 있다고 가정)
-from scripts import BaseExperiment
-from scripts.experiments.simple_experiment import SimpleExperiment
+from scripts import BaseExperiment, Logger
+from scripts.experiments import SimpleExperiment
 
 # from experiment.ensemble_experiment import EnsembleExperiment # (추후 앙상블 실험 추가 시)
 
@@ -38,37 +38,39 @@ def main(cfg: DictConfig):
     '실행'을 위임한다.
     """
 
+    logger = Logger(cfg)
+    logger.setup_local_file_logging()   # (로거 초기화)
     # --- 1. 글로벌 환경 설정 ---
     set_seed(cfg.seed)
     log.info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
 
-    # (추후 WandB 로거 설정)
-    # wandb.init(project="gnn-distill-benchmark", config=OmegaConf.to_container(cfg))
-
     # --- 2. '실험(현장 감독)' 전략 선택 ---
     experiment: BaseExperiment = None  # (타입 힌트)
+    try:
+        # 'cfg.experiment.name' (e.g., "simple", "distillation")을 읽음
+        if cfg.experiment.name == "simple":
+            experiment = SimpleExperiment(cfg, logger)
+        #
+        # elif cfg.experiment.name == "distillation":
+        #     experiment = DistillationExperiment(cfg)
 
-    # 'cfg.experiment.name' (e.g., "simple", "distillation")을 읽음
-    if cfg.experiment.name == "simple":
-        experiment = SimpleExperiment(cfg)
-    #
-    # elif cfg.experiment.name == "distillation":
-    #     experiment = DistillationExperiment(cfg)
+        # (추후 앙상블 실험 추가 시)
+        # elif cfg.experiment.name == "ensemble_2teacher":
+        #     experiment = EnsembleExperiment(cfg)
 
-    # (추후 앙상블 실험 추가 시)
-    # elif cfg.experiment.name == "ensemble_2teacher":
-    #     experiment = EnsembleExperiment(cfg)
+        else:
+            raise ValueError(f"Unknown experiment name: {cfg.experiment.name}. Check 'configs/experiment/'")
 
-    else:
-        raise ValueError(f"Unknown experiment name: {cfg.experiment.name}. Check 'configs/experiment/'")
+        # --- 3. 실행 위임 ---
+        # (BaseExperiment.run()이 모든 것을 처리)
+        experiment.run()
 
-    # --- 3. 실행 위임 ---
-    # (BaseExperiment.run()이 모든 것을 처리)
-    experiment.run()
-
-    log.info("Main run finished.")
-    # (WandB 종료)
-    # wandb.finish()
+        log.info("Main run finished.")
+    except Exception as e:
+        log.error(f"An error occurred during the experiment: {e}")
+        raise e
+    finally:
+        logger.finish()
 
 
 if __name__ == "__main__":

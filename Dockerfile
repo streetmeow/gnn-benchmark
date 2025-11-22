@@ -54,7 +54,11 @@ RUN pip install --no-cache-dir \
     hydra-core==1.3.2 \
     omegaconf==2.3.0 \
     scikit-learn \
-    matplotlib
+    matplotlib \
+    seaborn \
+    umap-learn \
+    thop \
+    torchinfo
 
 # 10. 기본 실행 명령 (쉘)
 CMD ["/bin/bash"]

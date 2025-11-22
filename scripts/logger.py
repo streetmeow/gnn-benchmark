@@ -68,7 +68,8 @@ class Logger:
         group_name = f"{strategy_name}_{model_name}_{dataset_name}"
 
         # 3. 'name' 이름 조립 (훈련 + 시드 + 타임스탬프)
-        timestamp = datetime.datetime.now().strftime('%H%M%S')
+        kst = datetime.timezone(datetime.timedelta(hours=9))
+        timestamp = datetime.datetime.now(kst).strftime('%H%M%S')
         run_name = f"{train_name}_seed_{seed}_{timestamp}"
 
         try:
@@ -133,7 +134,7 @@ class Logger:
                 except Exception as e:
                     log.error(f"Error archiving {path}: {e}")
 
-        log.info(f"(Req 1) Archived {len(source_paths)} source files to {archive_path}")
+        log.info(f"Archived {len(source_paths)} source files to {archive_path}")
 
     def log_epoch_metrics(self, metrics_dict: Dict[str, Any], step: int):
         """
@@ -175,13 +176,25 @@ class Logger:
         local_path = os.path.join(self.output_dir, "final_results.yaml")
         try:
             OmegaConf.save(OmegaConf.create(final_metrics), local_path)
-            log.info(f"(Req 3) Final results saved to {local_path}")
+            log.info(f"Final results saved to {local_path}")
         except Exception as e:
             log.error(f"Failed to save final results to YAML: {e}")
 
         # 2. WandB Summary 탭에 기록
         if self.wandb_enabled:
             wandb.summary.update(final_metrics)
+
+    def save_model_complexity(self, complexity: Dict[str, Any]):
+        log_file_path = os.path.join(self.output_dir, "model_complexity.txt")
+        try:
+            with open(log_file_path, "w", encoding="utf-8") as f:
+                for key, value in complexity.items():
+                    f.write(f"{key}: {value}\n")
+            log.info(f"Model complexity saved to {log_file_path}")
+        except Exception as e:
+            log.error(f"Failed to save model complexity: {e}")
+        if self.wandb_enabled:
+            wandb.summary.update(complexity)
 
     def save_checkpoint(self, model: nn.Module, filename: str = "best_model.pth"):
         """
@@ -190,7 +203,7 @@ class Logger:
         local_path = os.path.join(self.output_dir, filename)
         try:
             torch.save(model.state_dict(), local_path)
-            log.info(f"(Req 4) Model checkpoint saved to {local_path}")
+            log.info(f"Model checkpoint saved to {local_path}")
         except Exception as e:
             log.error(f"Failed to save model checkpoint: {e}")
 
@@ -216,6 +229,22 @@ class Logger:
 
             except Exception as e:
                 log.error(f"Failed to log model artifact: {e}")
+
+    def save_visualization(self, plt_module: Any, filename: str = "embedding_visualization.png"):
+        local_path = os.path.join(self.output_dir, filename)
+        try:
+            plt_module.savefig(local_path, dpi=300, bbox_inches='tight')
+            plt_module.close()
+            log.info(f"Visualization saved to {local_path}")
+        except Exception as e:
+            log.error(f"Failed to save visualization: {e}")
+            return
+        if self.wandb_enabled:
+            try:
+                wandb.log({"visualization/umap": wandb.Image(local_path)})
+                log.info(f"Logged visualization to WandB: {filename}")
+            except Exception as e:
+                log.error(f"Failed to log visualization to WandB: {e}")
 
     def finish(self):
         """실험 종료 시 WandB 세션을 닫습니다."""

@@ -23,13 +23,13 @@ class SimpleExperiment(BaseExperiment):
         cfg = self.cfg
 
         # 1. 단일 모델 빌드 (GCN, GAT, GIN, SAGE...)
-        self.student_model = build_model(
+        self.model = build_model(
             self.cfg,  # ⬅️ 'cfg.model' (단일 모델 설정)
             self.data.num_features,
             self.num_classes
         ).to(self.device)
 
-        log.info(f"Built Single Model ({cfg.model.name}):\n{self.student_model}")
+        log.info(f"Built Single Model ({cfg.model.name}):\n{self.model}")
 
         # 2. 평가자 빌드 (단일 모델 기준)
         metrics = Metrics(
@@ -40,7 +40,7 @@ class SimpleExperiment(BaseExperiment):
         criterion_eval = nn.CrossEntropyLoss().to(self.device)
 
         self.evaluator = Evaluator(
-            model=self.student_model,
+            model=self.model,
             criterion=criterion_eval,
             metrics=metrics,
             device=self.device
@@ -52,7 +52,7 @@ class SimpleExperiment(BaseExperiment):
 
         # 'cfg.train' (top-level)에서 하이퍼파라미터 읽기
         optimizer = optim.Adam(
-            self.student_model.parameters(),
+            self.model.parameters(),
             lr=cfg.train.lr,
             weight_decay=cfg.train.weight_decay
         )
@@ -63,19 +63,20 @@ class SimpleExperiment(BaseExperiment):
 
         # '작업자'로 CETrainer를 고정
         trainer = CETrainer(
-            model=self.student_model,
+            model=self.model,
             optimizer=optimizer,
             evaluator=self.evaluator,
             device=self.device,
             scheduler=scheduler,
-            logger=self.logger
+            logger=self.logger,
+            save_checkpoint=cfg.experiment.save_checkpoint
         )
 
         # BaseTrainer의 공통 'run' 메서드 호출
         trainer.run(
             train_loader=self.train_loader,
             valid_loader=self.valid_loader,
-            epochs=cfg.train.epochs,  # ⬅️ top-level epochs
+            epochs=self.cfg.train.epochs,  # ⬅️ top-level epochs
             train_mode=self.train_mode,
             valid_mode=self.valid_mode
         )

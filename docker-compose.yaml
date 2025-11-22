@@ -1,8 +1,8 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   experiment:
-    image: streetmeow/gnn-bench:v1.1
+    image: streetmeow/gnn-bench:v1.3
     restart: unless-stopped
 
     container_name: jhc-env-0

@@ -1,7 +1,7 @@
-name: kd_basic
-epochs: 2
+name: test-mini
+epochs: 30
 lr: 0.01
-weight_decay: 5e-4
+weight_decay: 0
 use_distill: false
 use_scheduler: true
 kd_type: basic

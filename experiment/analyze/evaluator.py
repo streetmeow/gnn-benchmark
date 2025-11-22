@@ -29,7 +29,8 @@ class Evaluator:
         self.metrics = metrics
         self.device = device
 
-    def evaluate(self, loader: Iterable, mode: Literal["full", "mini"], split_mask: torch.Tensor | None = None) -> dict:
+    def evaluate(self, loader: Iterable, mode: Literal["full", "mini"], split_mask: torch.Tensor | None = None,
+                 return_logits: bool = False) -> tuple[dict, torch.Tensor | None]:
         """
         주어진 데이터로더를 사용해 모델을 평가하고 메트릭을 반환.
 
@@ -47,6 +48,7 @@ class Evaluator:
         """
         self.model.eval()
         self.metrics.reset()
+        logits_list = [] if return_logits else None
 
         # [Requirement 2]
         # 'loader'를 순회하는 구조 자체는 데이터가 풀배치든,
@@ -69,14 +71,9 @@ class Evaluator:
                     mask = split_mask.to(self.device)
 
                     # 마스크를 적용하여 loss 및 메트릭 계산
-                    labels = batch.y[mask].squeeze().long()
-                    loss = self.criterion(logits[mask], labels)
-                    self.metrics.update(
-                        logits=logits[mask],
-                        labels=labels,
-                        batch_loss=loss.item()
-                    )
-                    self.metrics.update_time(time_s, num_samples=mask.sum().item())
+                    target_labels = batch.y[mask].squeeze().long()
+                    target_logits = logits[mask]
+                    num_samples = mask.sum().item()
 
                 elif mode == "mini":
                     if not hasattr(batch, 'batch_size'):
@@ -84,20 +81,25 @@ class Evaluator:
                             "mode='mini' requires batch to have 'batch_size' attribute (PyG NeighborLoader standard).")
 
                     # PyG NeighborLoader 표준: 타겟 노드는 0 ~ batch_size-1
-                    logits_target = logits[:batch.batch_size]
-                    labels_target = batch.y[:batch.batch_size]
+                    target_logits = logits[:batch.batch_size]
+                    target_labels = batch.y[:batch.batch_size].squeeze().long()
 
-                    labels = labels_target.squeeze().long()
-                    loss = self.criterion(logits_target, labels)
-                    self.metrics.update(
-                        logits=logits_target,
-                        labels=labels,
-                        batch_loss=loss.item()
-                    )
-                    self.metrics.update_time(time_s, num_samples=batch.batch_size)
+                    num_samples = batch.batch_size
 
                 else:
                     raise ValueError(f"Unknown evaluation mode: {mode}")
+                # 손실 계산
+                loss = self.criterion(target_logits, target_labels)
+                # 메트릭 업데이트
+                self.metrics.update(logits=target_logits, labels=target_labels, batch_loss=loss.item())
+                # 추론 시간 업데이트
+                self.metrics.update_time(time_s=time_s, num_samples=num_samples)
 
+                if return_logits:
+                    logits_list.append(target_logits.cpu())
+        metrics = self.metrics.compute()
+        final_logits = None
+        if return_logits and logits_list:
+            final_logits = torch.cat(logits_list, dim=0)
         # 모든 배치 순회 후 최종 메트릭 계산
-        return self.metrics.compute()
+        return metrics, final_logits

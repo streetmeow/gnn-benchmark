@@ -1,4 +1,11 @@
 # configs/experiment/architectures.yaml
 output_dir: ./outputs
 name: simple
-metrics: ["acc", "f1_macro", "f1_micro", "recall"]
+mode: train
+metrics: ["acc", "f1_macro", "f1_micro", "recall", "inference_time"]
+save_checkpoint: true
+visualize: true
+feature_extractor_layers:
+  - layers.0
+  - layers.1
+  - layers.2

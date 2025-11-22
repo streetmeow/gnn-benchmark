@@ -6,5 +6,7 @@ defaults:
   - sampler: sampler_base
   - model: model_base
   - logging: logging_base
-seed: 42
+seed: 5
 gpu_id: 2
+#checkpoint_path: /app/outputs/2025-11-22/10-05-27/best_checkpoint.pth
+checkpoint_path: /app/outputs/2025-11-22/10-53-43/best_checkpoint.pth

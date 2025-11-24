@@ -6,18 +6,6 @@ from experiment.models.architectures import GCN, GAT, GraphSAGE, GIN
 def build_model(cfg, in_dim, out_dim):
     """
     cfg.model 에 정의된 타입에 따라 적절한 GNN 모델을 생성.
-
-    공용 interface:
-        model = build_model(cfg, in_dim, out_dim)
-        out = model(x, edge_index)
-
-    Args:
-        cfg: Hydra configuration (cfg.model.*)
-        in_dim: 입력 feature dimension
-        out_dim: 클래스 개수 (node classification 기준)
-
-    Returns:
-        nn.Module (BaseGNN 상속 모델)
     """
 
     name = cfg.model.name.lower()

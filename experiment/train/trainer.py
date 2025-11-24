@@ -18,8 +18,12 @@ log = logging.getLogger(__name__)
 
 class BaseTrainer(ABC):
     """
-    훈련 로직의 '템플릿'을 제공하는 추상 기본 클래스.
-    Resumable (학습 중단 후 재개) 기능이 포함됨.
+    훈련 및 검증 루프를 담당하는 추상 클래스.
+    풀배치와 미니 배치 모두 지원 가능.
+    1. 훈련 epoch 수행
+    2. 검증 수행
+    3. 체크포인트 저장 및 로드
+    4. 전체 훈련 루프 실행
     """
 
     def __init__(self, model: nn.Module, optimizer: optim.Optimizer, evaluator: Evaluator, device: torch.device,
@@ -41,7 +45,7 @@ class BaseTrainer(ABC):
         self.best_metric_value = -1.0
         self.best_epoch = 0
 
-        # [New] Resume을 위해 시작 에포크를 변수로 관리 (기본값 1)
+        # 훈련 재개를 위해 시작 에포크를 변수로 관리 (기본값 1)
         self.start_epoch = 1
 
     @abstractmethod
@@ -55,15 +59,15 @@ class BaseTrainer(ABC):
         for batch in tqdm(loader, desc="Training Epoch"):
             batch = batch.to(self.device)
 
-            # 1. Loss 계산
+            # Loss 계산 (이 때 loss 는 override 해서 자유롭게 사용 가능)
             loss, log_dict = self._compute_loss(batch)
 
-            # 2. 역전파
+            # 역전파
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
-            # 3. 기록
+            # 기록
             if mode == "full":
                 num_samples = batch.train_mask.sum().item()
             else:
@@ -91,7 +95,7 @@ class BaseTrainer(ABC):
 
         valid_data_full = valid_loader[0] if valid_mode == "full" else None
 
-        # [Fix] 시작 에포크를 변수에서 가져옴 (Resume 시 1이 아닐 수 있음)
+        # 시작 epoch 를 변수에서 가져옴 (Resume 시 1이 아닐 수 있음)
         for epoch in range(self.start_epoch, epochs + 1):
 
             # 1. Train
@@ -119,7 +123,7 @@ class BaseTrainer(ABC):
             log.info(
                 f"Epoch: {epoch:03d} | Train Loss: {train_metrics['loss_avg']:.4f} | Valid Acc: {valid_metrics['acc']:.4f}")
 
-            # 5. Checkpoint Saving (통합됨)
+            # 5. Checkpoint Saving
             current_metric = valid_metrics['acc']
             is_best = current_metric > self.best_metric_value
 
@@ -146,10 +150,10 @@ class BaseTrainer(ABC):
 
         save_dir = self.logger.output_dir if self.logger else "."
 
-        # Last: 항상 저장 (복구용)
+        # 마지막 건 항상 저장 (복구용)
         torch.save(snapshot, os.path.join(save_dir, "last_checkpoint.pth"))
 
-        # Best: 기록 갱신 시 저장 (결과용)
+        # 최고성능 스냅샷의 경우 기록 갱신 시 저장 (결과용)
         if is_best:
             torch.save(self.model.state_dict(), os.path.join(save_dir, "best_checkpoint.pth"))
             log.info(f"🏆 Best model saved at epoch {epoch} (Acc: {metric_value:.4f})")
@@ -158,12 +162,12 @@ class BaseTrainer(ABC):
             torch.save(snapshot, last_path)
 
     def resume_checkpoint(self, path: str):
-        """[New] 중단된 학습을 재개하기 위해 상태 로드"""
+        """중단된 학습을 재개하기 위해 상태 로드"""
         if not os.path.exists(path):
-            log.info(f"⚠️ Checkpoint not found at {path}. Starting from scratch.")
+            log.info(f"️ Checkpoint not found at {path}. Starting from scratch.")
             return
 
-        log.info(f"🔄 Resuming training from {path}...")
+        log.info(f" Resuming training from {path}...")
         checkpoint = torch.load(path, map_location=self.device)
 
         # 모델 & 옵티마이저 복구
@@ -178,4 +182,4 @@ class BaseTrainer(ABC):
         self.best_metric_value = checkpoint.get('best_metric_value', -1.0)
         self.best_epoch = checkpoint.get('best_epoch', 0)
 
-        log.info(f"✅ Resumed! Next epoch: {self.start_epoch}, Best Metric so far: {self.best_metric_value:.4f}")
+        log.info(f" Resumed! Next epoch: {self.start_epoch}, Best Metric so far: {self.best_metric_value:.4f}")

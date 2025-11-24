@@ -20,13 +20,13 @@ class Metrics(nn.Module):
         self.metric_names = metric_names
         self.metrics = nn.ModuleDict()
 
-        # 1. Config에 명시된 torchmetrics 객체 동적 생성
+        # metrics name 리스트를 순회하며 해당하는 torchmetrics 객체 생성
         for name in metric_names:
             metric_obj = self._build_torchmetric(name, num_classes)
             if metric_obj:
                 self.metrics[name] = metric_obj
 
-        # 2. 'inference_time'은 버퍼로 별도 관리
+        # 추론 시간은 별도로 관리
         self.track_time = "inference_time" in metric_names
         if self.track_time:
             self.register_buffer("total_inference_time_s", torch.tensor(0.0))
@@ -34,7 +34,7 @@ class Metrics(nn.Module):
 
     def _build_torchmetric(self, name: str, num_classes: int):
         """
-        메트릭 이름(str)에 해당하는 torchmetrics 객체를 생성하는 팩토리.
+        성능 평가 방식별 분기 처리 담당
         """
         if name == "acc":
             return torchmetrics.Accuracy(
@@ -78,13 +78,10 @@ class Metrics(nn.Module):
         preds_classes = torch.argmax(logits, dim=-1)
         num_samples = labels.shape[0]
 
-        # ModuleDict를 순회하며 각 메트릭 객체 업데이트
-        # [수정 2] 'loss' 메트릭을 'batch_loss'로 업데이트하는 로직 추가
+        # 각 방식 별로 업데이트 처리
         for name, metric in self.metrics.items():
             if name == "loss":
                 if batch_loss is not None:
-                    # MeanMetric.update(value, weight)
-                    # 배치 크기(num_samples)를 weight로 주어 가중 평균 계산
                     metric.update(batch_loss, weight=num_samples)
             else:
                 # acc, f1 등
@@ -92,11 +89,7 @@ class Metrics(nn.Module):
 
     def update_time(self, time_s: float, num_samples: int):
         """
-        추론 시간 관련 버퍼를 업데이트.
-
-        Args:
-            time_s (float): 해당 배치 추론에 걸린 시간 (초)
-            num_samples (int): 해당 배치의 샘플 수
+        추론 시간 버퍼 업데이트
         """
         if self.track_time:
             self.total_inference_time_s += time_s
@@ -104,18 +97,15 @@ class Metrics(nn.Module):
 
     def compute(self) -> dict:
         """
-        누적된 상태를 바탕으로 최종 메트릭 딕셔너리를 계산.
-
-        Returns:
-            dict: {메트릭 이름: 계산된 값}
+        누적된 값을 기반으로 메트릭 계산 및 반환
         """
         results = {}
 
-        # 1. torchmetrics 결과 계산
+        # 성능 평가 기준 별로 계산
         for name, metric in self.metrics.items():
             results[name] = metric.compute().item()
 
-        # 2. 추론 시간 계산 (활성화된 경우)
+        # 추론 시간 계산
         if self.track_time:
             if self.total_samples == 0:
                 results["inference_time_avg_ms"] = 0.0
@@ -129,11 +119,11 @@ class Metrics(nn.Module):
         """
         모든 메트릭과 버퍼를 초기화.
         """
-        # 1. torchmetrics 초기화
+        # torchmetrics 초기화
         for metric in self.metrics.values():
             metric.reset()
 
-        # 2. 추론 시간 버퍼 초기화
+        # 추론 시간 버퍼 초기화
         if self.track_time:
             self.total_inference_time_s.zero_()
             self.total_samples.zero_()

@@ -21,7 +21,7 @@ class Evaluator:
         Args:
             model (nn.Module): 평가할 GNN 모델 (BaseNN 상속)
             criterion (nn.Module): 손실 함수 (e.g., nn.CrossEntropyLoss)
-            metrics (Metrics): Metrics(v3) 객체
+            metrics (Metrics): Metrics 객체
             device (torch.device): 평가를 수행할 디바이스
         """
         self.model = model
@@ -30,40 +30,29 @@ class Evaluator:
         self.device = device
 
     def evaluate(self, loader: Iterable, mode: Literal["full", "mini"], split_mask: torch.Tensor | None = None,
-                 return_logits: bool = False) -> tuple[dict, torch.Tensor | None]:
+                    return_logits: bool = False) -> tuple[dict, torch.Tensor | None]:
         """
-        주어진 데이터로더를 사용해 모델을 평가하고 메트릭을 반환.
-
-        Args:
-            loader (Iterable):
-                - mode='full': [data] (full Data 객체가 담긴 리스트)
-                - mode='mini': NeighborLoader 등의 PyG 미니배치 로더
-            mode (Literal["full", "mini"]): 평가 모드
-            split_mask (torch.Tensor, optional):
-                - mode='full'일 때 사용할 노드 마스크 (e.g., data.val_mask)
-                - mode='mini'일 땐 무시됨.
-
-        Returns:
-            dict: self.metrics.compute() 결과 딕셔너리
+        데이터 로더를 사용해서 모델 평가를 수행
+        1. inference time 측정
+        2. 손실 및 메트릭 계산
+        3. 필요시 로짓 반환
         """
         self.model.eval()
         self.metrics.reset()
         logits_list = [] if return_logits else None
 
-        # [Requirement 2]
-        # 'loader'를 순회하는 구조 자체는 데이터가 풀배치든,
-        # 미니배치든, 향후 추가될 서브그래프 배치든 동일하게 작동.
+        # loader 를 순회하며 평가 수행
         with torch.no_grad():
             for batch in loader:
                 batch = batch.to(self.device)
-
+                # 추론 시간 측정
                 t_start = time.perf_counter()
                 logits = self.model(batch.x, batch.edge_index)
                 t_end = time.perf_counter()
 
                 time_s = t_end - t_start
 
-                # [Requirement 1] 풀배치/미니배치 분기 처리
+                # 풀배치, 미니배치 모드에 따른 타겟 노드 선택
                 if mode == "full":
                     if split_mask is None:
                         raise ValueError("mode='full' requires 'split_mask'.")

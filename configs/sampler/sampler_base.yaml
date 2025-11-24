@@ -1,4 +1,4 @@
-sizes: [15, 10, 5]
+sizes: [15, 10]
 #num_neighbors: [15, 10, 5]
 batch_size: 2048
 num_workers: 4

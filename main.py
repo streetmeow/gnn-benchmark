@@ -6,6 +6,7 @@ from omegaconf import DictConfig, OmegaConf
 import numpy as np
 import random
 import logging
+import datetime
 
 # --- '현장 감독' (Experiment) 클래스들을 임포트 ---
 # (이 파일들은 experiment/ 디렉토리에 있다고 가정)
@@ -32,10 +33,12 @@ def set_seed(seed: int):
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
     """
-    [하이레벨 지휘자]
-    Hydra로부터 cfg를 받아 '환경'을 설정하고,
-    '어떤 실험(Experiment)'을 실행할지 '선택'한 뒤,
-    '실행'을 위임한다.
+    주요 환경만 세팅하고 나머지는 Experiment 클래스에 전부 위임
+
+    1. 글로벌 환경 설정 (시드 고정 등)
+    2. 로거 초기화
+    3. 실험 전략 선택
+    4. 실행 위임
     """
 
     logger = Logger(cfg)
@@ -44,25 +47,23 @@ def main(cfg: DictConfig):
     set_seed(cfg.seed)
     log.info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
 
-    # --- 2. '실험(현장 감독)' 전략 선택 ---
+    # --- 2. 실험 전략 선택 ---
     experiment: BaseExperiment = None  # (타입 힌트)
     try:
-        # 'cfg.experiment.name' (e.g., "simple", "distillation")을 읽음
+        # 실험 전략에 따라 적절한 Experiment 지정해서 돌리기
+        # config 의 experiment 섹션 name 지정
         if cfg.experiment.name == "simple":
             experiment = SimpleExperiment(cfg, logger)
-        #
+        # 예시 실험 세팅
         # elif cfg.experiment.name == "distillation":
         #     experiment = DistillationExperiment(cfg)
 
-        # (추후 앙상블 실험 추가 시)
-        # elif cfg.experiment.name == "ensemble_2teacher":
-        #     experiment = EnsembleExperiment(cfg)
-
+        # experiment name 설정이 잘못 되어 있음
         else:
             raise ValueError(f"Unknown experiment name: {cfg.experiment.name}. Check 'configs/experiment/'")
 
         # --- 3. 실행 위임 ---
-        # (BaseExperiment.run()이 모든 것을 처리)
+        # BaseExperiment.run()이 모든 것을 처리
         experiment.run()
 
         log.info("Main run finished.")
@@ -70,8 +71,12 @@ def main(cfg: DictConfig):
         log.error(f"An error occurred during the experiment: {e}")
         raise e
     finally:
+        # logger 종료 작업
         logger.finish()
 
 
 if __name__ == "__main__":
+    # 한국 표준시(KST) 기준 폴더 제작을 위한 OmegaConf 리졸버 등록
+    OmegaConf.register_new_resolver("kst", lambda fmt: datetime.datetime.now(
+        datetime.timezone(datetime.timedelta(hours=9))).strftime(fmt))
     main()

@@ -9,4 +9,15 @@ defaults:
 seed: 5
 gpu_id: 2
 #checkpoint_path: /app/outputs/2025-11-22/10-05-27/best_checkpoint.pth
-checkpoint_path: /app/outputs/2025-11-22/10-53-43/best_checkpoint.pth
+#checkpoint_path: /app/outputs/2025-11-22/10-53-43/best_checkpoint.pth
+
+hydra:
+  # 1. 단일 실행 (python main.py ...)
+  run:
+    dir: outputs/${kst:%Y-%m-%d}/${kst:%H-%M-%S}
+
+  # 2. 다중 실행 (python main.py -m ...)
+  sweep:
+    # 여기도 kst로 바꿔줘야 멀티런 폴더가 한국 시간으로 찍힘
+    dir: multirun/${kst:%Y-%m-%d}/${kst:%H-%M-%S}
+    subdir: ${hydra.job.num}

@@ -6,6 +6,13 @@ from omegaconf import DictConfig
 
 
 class GNNDataLoader:
+    """
+    다양한 그래프 데이터셋을 로드하고 훈련/검증/테스트용 샘플러를 생성하는 클래스
+
+    - 지원 데이터셋: Cora, Citeseer, Pubmed, Actor, OGBN-Arxiv, OGBN-Products
+    - 샘플러가 필수인 미니배치 학습을 위해 NeighborLoader 사용
+    - ogbn 데이터셋의 경우, 공식 제공되는 split 인덱스를 사용
+    """
     def __init__(self, cfg_dataset):
         self.name = cfg_dataset.name.lower()
         self.root = cfg_dataset.root
@@ -16,11 +23,15 @@ class GNNDataLoader:
 
     @staticmethod
     def idx_to_mask(idx: torch.Tensor, size: int) -> torch.Tensor:
+        """
+        train, val, test 인덱스에 대해 대상이 아닌 걸 False로 마스킹하는 함수
+        """
         mask = torch.zeros(size, dtype=torch.bool)
         mask[idx] = True
         return mask
 
     def load(self):
+        """데이터셋 로드 분기 처리"""
         if self.name in ["cora", "citeseer", "pubmed"]:
             self._load_planetoid()
         elif self.name == "actor":
@@ -33,12 +44,18 @@ class GNNDataLoader:
         return self.data, self.num_classes
 
     def _load_planetoid(self):
+        """
+        Planetoid 데이터셋 로드 (Cora, Citeseer, Pubmed)
+        """
         dataset = Planetoid(root=f"{self.root}/{self.name}", name=self.name.capitalize())
         data = dataset[0]
         self.data = data
         self.num_classes = dataset.num_classes
 
     def _load_ogbn(self):
+        """
+        OGBN 데이터셋 로드 (OGBN-Arxiv, OGBN-Products)
+        """
         dataset = PygNodePropPredDataset(name=self.name, root=self.root)
         data = dataset[0]
         split_idx = dataset.get_idx_split()
@@ -52,6 +69,9 @@ class GNNDataLoader:
         self.num_classes = dataset.num_classes
 
     def _load_actor(self):
+        """
+        Actor 데이터셋 로드
+        """
         dataset = Actor(root=f"{self.root}/actor")
         data = dataset[0]
         num_nodes = data.num_nodes

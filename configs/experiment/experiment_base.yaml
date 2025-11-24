@@ -8,4 +8,4 @@ visualize: true
 feature_extractor_layers:
   - layers.0
   - layers.1
-  - layers.2
+#  - layers.2

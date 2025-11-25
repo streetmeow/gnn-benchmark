@@ -1,0 +1,16 @@
+# 2-layer
+model:
+  num_layers: 2
+
+# 2-hop fanout
+sampler:
+  sizes: [15, 10]
+  batch_size: 2048
+  num_workers: 4
+  shuffle: true
+
+# sweep search space
+model.hidden_dim: [64, 128]
+model.dropout: [0.0, 0.5]
+train.lr: [0.005, 0.01]
+train.weight_decay: [5e-5, 5e-4]

@@ -8,6 +8,7 @@ import csv
 from omegaconf import DictConfig, OmegaConf
 from hydra.core.hydra_config import HydraConfig
 from typing import Optional, Dict, Any
+import socket
 
 
 log = logging.getLogger(__name__)
@@ -39,7 +40,8 @@ class Logger:
             self.output_dir = HydraConfig.get().runtime.output_dir
         except Exception:
             # Hydra가 아닌 환경(e.g., 일반 Python 실행)을 위한 폴백
-            self.output_dir = os.path.join(".", datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+            kst = datetime.timezone(datetime.timedelta(hours=9))
+            self.output_dir = os.path.join("./output_logs", datetime.datetime.now(kst).strftime('%Y-%m-%d_%H-%M-%S'))
             os.makedirs(self.output_dir, exist_ok=True)
             log.warning(f"Hydra output_dir를 찾을 수 없습니다. 현재 디렉토리 사용: {self.output_dir}")
 
@@ -58,29 +60,40 @@ class Logger:
         cfg = self.cfg
 
         # 1. Config에서 '재료'를 긁어옴 (스크립트에서 조립)
-        strategy_name = cfg.logging.experiment_strategy_name
         model_name = cfg.model.name.replace("/", "_")
         dataset_name = cfg.dataset.name.replace("/", "_")
-        train_name = cfg.train.name
+        experiment_name = cfg.experiment.wandb_name
         seed = cfg.seed
+        lr = cfg.train.lr
+        layer_num = cfg.model.num_layers
+        run_name = \
+            f"{model_name}_{dataset_name}_lr{lr}_ly{layer_num}_wd{cfg.train.weight_decay}_dr{cfg.model.dropout}_hd{cfg.model.hidden_dim}"
+        group_name = f"{experiment_name}_{model_name}"
 
         # 2. 'group' 이름 조립 (전략 + 모델 + 데이터셋)
-        group_name = f"{strategy_name}_{model_name}_{dataset_name}"
+        tags = [model_name, dataset_name, str(layer_num) + "layers", "v5"]
+        if cfg.dataset.get("use_sampler", False):
+            tags.append("sampler")
 
-        # 3. 'name' 이름 조립 (훈련 + 시드 + 타임스탬프)
-        kst = datetime.timezone(datetime.timedelta(hours=9))
-        timestamp = datetime.datetime.now(kst).strftime('%H%M%S')
-        run_name = f"{train_name}_seed_{seed}_{timestamp}"
+        # # 3. 'name' 이름 조립 (훈련 + 시드 + 타임스탬프)
+        # kst = datetime.timezone(datetime.timedelta(hours=9))
+        # timestamp = datetime.datetime.now(kst).strftime('%H%M%S')
+        # run_name = f"{train_name}_seed_{seed}_{timestamp}"
 
         try:
             wandb.init(
                 project=cfg.logging.project,
                 group=group_name,
                 name=run_name,
+                tags=tags,
                 config=OmegaConf.to_container(cfg, resolve=True),
                 reinit=True  # (순차 실행 시 재초기화 허용)
             )
-            log.info(f"WandB initialized. Group: {group_name}, Run: {run_name}")
+            wandb.config.update({
+                "host_name": socket.gethostname(),  # 어느 서버에서 돌렸는지 (ex: lab-server-02)
+                "output_dir": os.path.abspath(self.output_dir)  # 로컬 절대 경로
+            }, allow_val_change=True)
+            log.info(f"WandB initialized. Group: {experiment_name}, Run: {run_name}")
         except wandb.errors.AuthenticationError:
             log.error("WandB AuthenticationError. WANDB_API_KEY 환경 변수가 올바르게 설정되었는지 확인하세요.")
             self.wandb_enabled = False
@@ -94,6 +107,7 @@ class Logger:
         main.py에서 이 메서드를 호출해야 합니다.
         """
         log_file_path = os.path.join(self.output_dir, "training.logging")
+        root_logger = logging.getLogger()
 
         file_handler = logging.FileHandler(log_file_path, encoding='utf-8')
         file_handler.setLevel(logging.INFO)
@@ -101,6 +115,14 @@ class Logger:
             "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
         )
         file_handler.setFormatter(formatter)
+
+        has_console = any(isinstance(h, logging.StreamHandler) for h in root_logger.handlers)
+
+        if not has_console:
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(logging.INFO)  # 보고 싶은 레벨 설정
+            console_handler.setFormatter(formatter)  # 파일이랑 똑같은 포맷 사용
+            root_logger.addHandler(console_handler)
 
         # 루트 로거에 핸들러 추가
         logging.getLogger().addHandler(file_handler)

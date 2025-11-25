@@ -1,0 +1,4 @@
+# configs/dataset/dataset_base.yaml
+name: actor
+root: ./dataset
+use_sampler: false

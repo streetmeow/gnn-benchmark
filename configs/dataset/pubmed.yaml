@@ -1,0 +1,4 @@
+# configs/dataset/dataset_base.yaml
+name: pubmed
+root: ./dataset
+use_sampler: false

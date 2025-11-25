@@ -2,10 +2,11 @@
 output_dir: ./outputs
 name: simple
 mode: train
-metrics: ["acc", "f1_macro", "f1_micro", "recall", "inference_time"]
+metrics: ["acc", "f1_macro", "f1_micro", "recall", "inference_time", "precision", "average_loss"]
 save_checkpoint: true
-visualize: true
-feature_extractor_layers:
-  - layers.0
-  - layers.1
+visualize: false
+wandb_name: experiment_best_params_v5
+#feature_extractor_layers:
+#  - layers.0
+#  - layers.1
 #  - layers.2

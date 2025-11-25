@@ -87,37 +87,37 @@ class GNNDataLoader:
         self.data = data
         self.num_classes = dataset.num_classes
 
-    def get_train_sampler(self, cfg_sampler: DictConfig) -> NeighborLoader:
+    def get_train_sampler(self, cfg_sampler: DictConfig, sampler_size) -> NeighborLoader:
         """훈련용 (train_mask) 샘플러 생성 (셔플 O)"""
         train_nodes = torch.where(self.data.train_mask)[0]
         return NeighborLoader(
             self.data,
             input_nodes=train_nodes,
-            num_neighbors=list(cfg_sampler.sizes), # ⬅️ GCN/GIN에 따라 리스트가 달라짐
+            num_neighbors=list(sampler_size),   # GCN/GIN에 따라 리스트가 달라짐
             batch_size=cfg_sampler.batch_size,
             shuffle=cfg_sampler.get("shuffle", True),
             num_workers=cfg_sampler.get("num_workers", 0)
         )
 
-    def get_valid_sampler(self, cfg_sampler: DictConfig) -> NeighborLoader:
+    def get_valid_sampler(self, cfg_sampler: DictConfig, sampler_size) -> NeighborLoader:
         """검증용 (val_mask) 샘플러 생성 (셔플 X)"""
         valid_nodes = torch.where(self.data.val_mask)[0]
         return NeighborLoader(
             self.data,
             input_nodes=valid_nodes,
-            num_neighbors=list(cfg_sampler.sizes),
+            num_neighbors=list(sampler_size),
             batch_size=cfg_sampler.batch_size,
             shuffle=False,
             num_workers=cfg_sampler.get("num_workers", 0)
         )
 
-    def get_test_sampler(self, cfg_sampler: DictConfig) -> NeighborLoader:
+    def get_test_sampler(self, cfg_sampler: DictConfig, sampler_size) -> NeighborLoader:
         """테스트용 (test_mask) 샘플러 생성 (셔플 X)"""
         test_nodes = torch.where(self.data.test_mask)[0]
         return NeighborLoader(
             self.data,
             input_nodes=test_nodes,
-            num_neighbors=list(cfg_sampler.sizes),
+            num_neighbors=list(sampler_size),
             batch_size=cfg_sampler.batch_size,
             shuffle=False,
             num_workers=cfg_sampler.get("num_workers", 0)

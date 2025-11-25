@@ -1,5 +1,6 @@
 # configs/config.yaml
 defaults:
+  - _self_
   - experiment: experiment_base
   - dataset: dataset_base
   - train: train_base

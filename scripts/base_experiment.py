@@ -89,9 +89,9 @@ class BaseExperiment(ABC):
             # loader 에서 sampler 생성 메서드 호출
             log.info("Building samplers...")
             return (data, num_classes,
-                    loader.get_train_sampler(self.cfg.sampler),
-                    loader.get_valid_sampler(self.cfg.sampler),
-                    loader.get_test_sampler(self.cfg.sampler),
+                    loader.get_train_sampler(self.cfg.sampler, self.cfg.model.sizes),
+                    loader.get_valid_sampler(self.cfg.sampler, self.cfg.model.sizes),
+                    loader.get_test_sampler(self.cfg.sampler, self.cfg.model.sizes),
                     "mini", "mini", "mini")
 
     def _load_checkpoint(self, model: nn.Module, path: str, strict: bool = True):

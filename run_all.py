@@ -1,0 +1,166 @@
+# multi_run.py (Grid Search 완성본)
+import hydra
+from hydra import initialize, compose
+from omegaconf import OmegaConf
+import datetime
+import torch
+import gc
+import traceback
+import itertools
+import os
+
+# [핵심] main.py에서 알맹이 함수 가져오기
+from main import run_experiment
+
+
+def run_grid_search():
+    # KST 리졸버 등록
+    if not OmegaConf.has_resolver("kst"):
+        OmegaConf.register_new_resolver("kst", lambda fmt: datetime.datetime.now(
+            datetime.timezone(datetime.timedelta(hours=9))).strftime(fmt))
+
+    # 1. 탐색 공간 정의
+    search_space = {
+        "dataset": ["cora", "citeseer", "pubmed", "ogbn-arxiv", "ogbn-products", "actor"],
+        "model": ["gcn", "graphsage", "gat", "gin"],
+        "seed": [5],
+        # 하이퍼파라미터
+        "model.hidden_dim": [64, 128],  # 예시로 줄임
+        "model.dropout": [0.2, 0.5],
+        "train.lr": [0.001, 0.01],
+        "train.weight_decay": [5e-4, 5e-5]
+    }
+
+    # 2. Cartesian Product 생성
+    keys, values = zip(*search_space.items())
+    combinations = list(itertools.product(*values))
+
+    print(f"🚀 Total Configurations to run: {len(combinations)}")
+
+    with initialize(version_base=None, config_path="configs"):
+
+        for i, combination in enumerate(combinations):
+            # 현재 파라미터 딕셔너리 생성
+            param_dict = dict(zip(keys, combination))
+
+            # 진행상황 출력
+            print(f"\n==========================================================")
+            print(f"🧩 [Grid Search layer 2 {i + 1}/{len(combinations)}] Params: {param_dict}")
+
+            d_name = param_dict["dataset"]
+            m_name = param_dict["model"]
+
+            # 3. Overrides 리스트 생성 (기본 파라미터)
+            overrides = []
+            for k, v in param_dict.items():
+                overrides.append(f"{k}={v}")
+            overrides.append("gpu_id=0")
+
+            # [WandB Grouping] 한 눈에 보기 좋게 그룹 이름 설정
+            # overrides.append(f"logging.experiment_strategy_name=GridSearch_v1")
+
+            # 4. 조건부 로직 (Logic) - 안전장치 포함
+            is_large_dataset = d_name in ["ogbn-products", "ogbn-arxiv"]
+
+            # (1) 샘플러 활성화 여부 및 배치 사이즈 결정
+            if is_large_dataset or m_name == "graphsage":
+                overrides.append("dataset.use_sampler=true")
+                overrides.append("sampler.batch_size=512")
+
+                # 데이터셋별 배치 사이즈
+                if is_large_dataset:
+                    overrides.append("sampler.batch_size=1024")
+            else:
+                overrides.append("dataset.use_sampler=false")
+            if d_name == "ogbn-products":
+                overrides.append("train.epochs=15")
+            elif d_name in ["cora", "citeseer", "pubmed", "actor"]:
+                overrides.append("train.epochs=65")
+            elif d_name == "ogbn-arxiv":
+                overrides.append("train.epochs=75")
+
+            # (2) 모델별 레이어 및 샘플러 사이즈 매칭 (중요!)
+            overrides.append("model.num_layers=2")
+            overrides.append("model.sizes=[15,10]")
+
+            try:
+                if i == 0:
+                    gc.collect()  # 1. 파이썬 쓰레기 수거 (참조 잃은 객체 삭제)
+                    torch.cuda.empty_cache()  # 2. PyTorch가 잡고 있는 빈 메모리 캐시 해제
+                    torch.cuda.synchronize()
+                # 5. Config 조립 및 실행
+                cfg = compose(config_name="config", overrides=overrides)
+                run_experiment(cfg)
+
+            except Exception as e:
+                print(f"❌ Error in experiment layer 2 {i + 1}: {e}")
+                traceback.print_exc()
+
+            finally:
+                # 6. 메모리 청소
+                gc.collect()
+                torch.cuda.empty_cache()
+
+        for i, combination in enumerate(combinations):
+            # 현재 파라미터 딕셔너리 생성
+            param_dict = dict(zip(keys, combination))
+
+            # 진행상황 출력
+            print(f"\n==========================================================")
+            print(f"🧩 [Grid Search layer 3 {i + 1}/{len(combinations)}] Params: {param_dict}")
+
+            d_name = param_dict["dataset"]
+            m_name = param_dict["model"]
+
+            # 3. Overrides 리스트 생성 (기본 파라미터)
+            overrides = []
+            for k, v in param_dict.items():
+                overrides.append(f"{k}={v}")
+            overrides.append("gpu_id=0")
+
+            # [WandB Grouping] 한 눈에 보기 좋게 그룹 이름 설정
+            # overrides.append(f"logging.experiment_strategy_name=GridSearch_v1")
+
+            # 4. 조건부 로직 (Logic) - 안전장치 포함
+            is_large_dataset = d_name in ["ogbn-products", "ogbn-arxiv"]
+
+            # (1) 샘플러 활성화 여부 및 배치 사이즈 결정
+            if is_large_dataset or m_name == "graphsage":
+                overrides.append("dataset.use_sampler=true")
+                overrides.append("sampler.batch_size=512")
+
+                # 데이터셋별 배치 사이즈
+                if is_large_dataset:
+                    overrides.append("sampler.batch_size=1024")
+            else:
+                overrides.append("dataset.use_sampler=false")
+            if d_name == "ogbn-products":
+                overrides.append("train.epochs=15")
+            elif d_name in ["cora", "citeseer", "pubmed", "actor"]:
+                overrides.append("train.epochs=65")
+            elif d_name == "ogbn-arxiv":
+                overrides.append("train.epochs=75")
+
+            # (2) 모델별 레이어 및 샘플러 사이즈 매칭 (중요!)
+            overrides.append("model.num_layers=3")
+            overrides.append("model.sizes=[15,10,5]")
+
+            try:
+                # 5. Config 조립 및 실행
+                cfg = compose(config_name="config", overrides=overrides)
+                run_experiment(cfg)
+
+            except Exception as e:
+                print(f"❌ Error in experiment layer 3 - {i + 1}: {e}")
+                traceback.print_exc()
+
+            finally:
+                # 6. 메모리 청소
+                gc.collect()
+                torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
+    run_grid_search()

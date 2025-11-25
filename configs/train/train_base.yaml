@@ -1,4 +1,5 @@
-name: basic
+# 실험의 명칭
+name: finding_test2
 epochs: 3
 lr: 0.01
 weight_decay: 5e-4

@@ -41,6 +41,11 @@ docker compose start
 # 컨테이너 종료
 docker compose down
 
+# nvidia 인식 실패
+docker compose down -v
+docker compose up -d
+docker compose exec experiment /bin/bash
+
 # 업데이트
 export DOCKER_TOKEN=your_dockerhub_token_here
 echo "$DOCKER_TOKEN" | docker login -u streetmeow --password-stdin

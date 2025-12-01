@@ -5,7 +5,7 @@ mode: train
 metrics: ["acc", "f1_macro", "f1_micro", "recall", "inference_time", "precision", "average_loss"]
 save_checkpoint: true
 visualize: false
-wandb_name: experiment_best_params_v5
+wandb_name: experiment_best_params_v6
 #feature_extractor_layers:
 #  - layers.0
 #  - layers.1

@@ -6,26 +6,30 @@ services:
     restart: unless-stopped
 
     container_name: jhc-env-0
+    runtime: nvidia
 
     volumes:
       - .:/app
 
     # GPU 할당
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities: [gpu]
 
     # 환경 변수 (WandB 키 전달)
     environment:
       - WANDB_API_KEY=${WANDB_API_KEY}
       - PYTHONNOUSERSITE=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
 
     # 메모리 설정 & 유지
     ipc: host
     tty: true
     stdin_open: true
+
     command: /bin/bash

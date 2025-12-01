@@ -59,7 +59,7 @@ class SimpleExperiment(BaseExperiment):
 
         scheduler = None
         if cfg.train.get("use_scheduler", False):
-            scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=10)
+            scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
 
         # '작업자'로 CETrainer를 고정
         trainer = CETrainer(
@@ -76,7 +76,7 @@ class SimpleExperiment(BaseExperiment):
         trainer.run(
             train_loader=self.train_loader,
             valid_loader=self.valid_loader,
-            epochs=self.cfg.train.epochs,  # ⬅️ top-level epochs
+            epochs=self.cfg.train.epochs,  # top-level epochs
             train_mode=self.train_mode,
             valid_mode=self.valid_mode
         )

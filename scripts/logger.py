@@ -71,7 +71,7 @@ class Logger:
         group_name = f"{experiment_name}_{model_name}"
 
         # 2. 'group' 이름 조립 (전략 + 모델 + 데이터셋)
-        tags = [model_name, dataset_name, str(layer_num) + "layers", "v5"]
+        tags = [model_name, dataset_name, str(layer_num) + "layers", "v12"]
         if cfg.dataset.get("use_sampler", False):
             tags.append("sampler")
 

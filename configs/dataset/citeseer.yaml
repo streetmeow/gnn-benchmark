@@ -1,4 +1,4 @@
 # configs/dataset/dataset_base.yaml
 name: citeseer
 root: ./dataset
-use_sampler: false
+use_sampler: None

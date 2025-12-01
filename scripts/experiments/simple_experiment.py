@@ -24,7 +24,7 @@ class SimpleExperiment(BaseExperiment):
 
         # 1. 단일 모델 빌드 (GCN, GAT, GIN, SAGE...)
         self.model = build_model(
-            self.cfg,  # ⬅️ 'cfg.model' (단일 모델 설정)
+            self.cfg,  #️ 'cfg.model' (단일 모델 설정)
             self.data.num_features,
             self.num_classes
         ).to(self.device)
@@ -67,6 +67,7 @@ class SimpleExperiment(BaseExperiment):
             optimizer=optimizer,
             evaluator=self.evaluator,
             device=self.device,
+            train_mask=self.data.train_mask,
             scheduler=scheduler,
             logger=self.logger,
             save_checkpoint=cfg.experiment.save_checkpoint

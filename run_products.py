@@ -283,9 +283,9 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2, 0.5, 0.7],
 
         "wd": [5e-5],
 
@@ -403,7 +403,7 @@ HP_SEARCH_SPACE = {
 # 🔥 2) 공통: epoch 설정
 # ============================================================
 EPOCH_TABLE = {
-    "ogbn-products": 100,
+    "ogbn-products": 3,
     "ogbn-arxiv": 150,
     "pubmed": 140,
     "actor": 250,
@@ -438,8 +438,8 @@ def run_grid_search(target_datasets=None, target_models=None):
     with initialize(version_base=None, config_path="configs"):
 
         for (dataset, model) in all_pairs:
-            if dataset != "ogbn-arxiv":
-                continue  # 하나만 실행
+            # if dataset != "ogbn-arxiv":
+            #     continue  # 하나만 실행
 
             hp = HP_SEARCH_SPACE[(dataset, model)]
 
@@ -485,13 +485,16 @@ def run_grid_search(target_datasets=None, target_models=None):
                     ]
 
                     # sampler 여부
-                    is_large = dataset in ["ogbn-products"]
-                    if is_large or model == "graphsage":
-                        overrides.append("dataset.use_sampler=true")
-                        bs = 1024 if is_large else 512
+                    if model == "graphsage":
+                        overrides.append("dataset.use_sampler=neighbor")
+                        bs = 512
                         overrides.append(f"sampler.batch_size={bs}")
+                    elif model == "ogbn-products":
+                        overrides.append("dataset.use_sampler=cluster")
+                        overrides.append("sampler.batch_size=1")
+                        overrides.append("sampler.num_parts=2000")
                     else:
-                        overrides.append("dataset.use_sampler=false")
+                        overrides.append("dataset.use_sampler=None")
 
                     # layer-specific model sizes
                     if layer == 2:
@@ -518,11 +521,11 @@ def run_grid_search(target_datasets=None, target_models=None):
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
     gc.collect()
     torch.cuda.empty_cache()
 
     # 필요하면 일부만 선택 가능:
-    # run_grid_search(target_datasets=["cora"], target_models=["gcn"])
+    run_grid_search(target_datasets=["ogbn-products"], target_models=["gcn"])
 
-    run_grid_search()
+    # run_grid_search()

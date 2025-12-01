@@ -485,13 +485,15 @@ def run_grid_search(target_datasets=None, target_models=None):
                     ]
 
                     # sampler 여부
-                    is_large = dataset in ["ogbn-products", "ogbn-arxiv"]
-                    if is_large or model == "graphsage":
-                        overrides.append("dataset.use_sampler=true")
-                        bs = 1024 if is_large else 512
+                    if model == "graphsage":
+                        overrides.append("dataset.use_sampler=neighbor")
+                        bs = 512
                         overrides.append(f"sampler.batch_size={bs}")
+                    elif model == "ogbn-products":
+                        overrides.append("dataset.use_sampler=cluster")
+                        overrides.append(f"sampler.batch_size=1024")
                     else:
-                        overrides.append("dataset.use_sampler=false")
+                        overrides.append("dataset.use_sampler=None")
 
                     # layer-specific model sizes
                     if layer == 2:

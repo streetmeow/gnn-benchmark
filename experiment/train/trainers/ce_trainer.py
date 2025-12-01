@@ -20,16 +20,27 @@ class CETrainer(BaseTrainer):
                  optimizer: torch.optim.Optimizer,
                  evaluator: Evaluator,
                  device: torch.device,
+                 train_mask=None,
                  **kwargs):  # scheduler, logger 등을 받기 위함
 
         super().__init__(model, optimizer, evaluator, device, **kwargs)
+        self.train_mask = train_mask
 
     def _compute_loss(self, batch: Data) -> tuple[torch.Tensor, dict]:
         # 1. Model Forward (GCN이든 GAT든 상관없이 logits 반환)
         logits = self.model(batch.x, batch.edge_index)
 
         # 2. Full-batch / Mini-batch 모드 자동 감지
-        if hasattr(batch, 'batch_size'):
+        # --- ClusterLoader mini-batch ---
+        if hasattr(batch, "n_id"):
+            # cluster mode
+            global_ids = batch.n_id
+            global_mask = self.train_mask[global_ids]  # global mask slice
+            target_nodes = torch.where(global_mask)[0]
+
+            target_logits = logits[target_nodes]
+            target_labels = batch.y[target_nodes].squeeze().long()
+        elif hasattr(batch, 'batch_size'):
             # (Mini-batch) PyG NeighborLoader 표준
             # 0 ~ batch_size-1 까지가 타겟 노드
             target_logits = logits[:batch.batch_size]

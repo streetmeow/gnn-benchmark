@@ -1,8 +1,9 @@
 import torch
 from torch_geometric.datasets import Planetoid, Actor
 from ogb.nodeproppred import PygNodePropPredDataset
-from torch_geometric.loader import NeighborLoader
+from torch_geometric.loader import NeighborLoader, ClusterLoader, ClusterData
 from omegaconf import DictConfig
+import torch_geometric.transforms as T
 
 
 class GNNDataLoader:
@@ -90,6 +91,20 @@ class GNNDataLoader:
         self.data = data
         self.num_classes = dataset.num_classes
 
+    def build_cluster_sampler(self, cfg_sampler):
+        """클러스터 샘플러 생성 (셔플 O)"""
+        cluster_data = ClusterData(
+            self.data,
+            num_parts=cfg_sampler.num_parts,
+            recursive=False,
+        )
+        return ClusterLoader(
+            cluster_data,
+            batch_size=cfg_sampler.batch_size,
+            shuffle=cfg_sampler.get("shuffle", True),
+            num_workers=cfg_sampler.get("num_workers", 0),
+        )
+
     def get_train_sampler(self, cfg_sampler: DictConfig, sampler_size) -> NeighborLoader:
         """훈련용 (train_mask) 샘플러 생성 (셔플 O)"""
         train_nodes = torch.where(self.data.train_mask)[0]
@@ -99,7 +114,7 @@ class GNNDataLoader:
             num_neighbors=list(sampler_size),   # GCN/GIN에 따라 리스트가 달라짐
             batch_size=cfg_sampler.batch_size,
             shuffle=cfg_sampler.get("shuffle", True),
-            num_workers=cfg_sampler.get("num_workers", 0)
+            num_workers=cfg_sampler.get("num_workers", 0),
         )
 
     def get_valid_sampler(self, cfg_sampler: DictConfig, sampler_size) -> NeighborLoader:
@@ -111,7 +126,7 @@ class GNNDataLoader:
             num_neighbors=list(sampler_size),
             batch_size=cfg_sampler.batch_size,
             shuffle=False,
-            num_workers=cfg_sampler.get("num_workers", 0)
+            num_workers=cfg_sampler.get("num_workers", 0),
         )
 
     def get_test_sampler(self, cfg_sampler: DictConfig, sampler_size) -> NeighborLoader:
@@ -123,5 +138,5 @@ class GNNDataLoader:
             num_neighbors=list(sampler_size),
             batch_size=cfg_sampler.batch_size,
             shuffle=False,
-            num_workers=cfg_sampler.get("num_workers", 0)
+            num_workers=cfg_sampler.get("num_workers", 0),
         )

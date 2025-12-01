@@ -81,9 +81,12 @@ class BaseExperiment(ABC):
         data, num_classes = loader.load()
         data = data.to(self.device)
 
-        if not self.cfg.dataset.use_sampler:
+        if self.cfg.dataset.use_sampler not in ["neighbor", "cluster"]:
             # 샘플러 미사용 시, 풀배치 모드로 처리
             return data, num_classes, [data], [data], [data], "full", "full", "full"
+        elif self.cfg.dataset.use_sampler == "cluster":
+            return (data, num_classes, loader.build_cluster_sampler(self.cfg.sampler), [data], [data],
+                    "mini", "full", "full")
         else:
             # 샘플러 사용 시, 미니배치 모드로 처리
             # loader 에서 sampler 생성 메서드 호출
@@ -301,6 +304,12 @@ class BaseExperiment(ABC):
         4. 결과 저장 및 시각화
         """
         log.info("--- Starting Final Test & Visualization ---")
+
+        if self.cfg.dataset.use_sampler == "cluster":
+            # 클러스터 샘플러 사용 시, CPU로 이동 필요
+            log.info("Moving model and data to CPU for cluster sampler...")
+            self.model = self.model.to('cpu')
+            self.data = self.data.to('cpu')
 
         # 현재 디렉토리에 저장된 최고 성능 모델의 체크포인트 로드 시도
         best_path = os.path.join(self.logger.output_dir, "best_checkpoint.pth")

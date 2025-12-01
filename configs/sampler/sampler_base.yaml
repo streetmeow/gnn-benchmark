@@ -3,4 +3,5 @@
 batch_size: 2048
 num_workers: 4
 shuffle: true
+num_parts: 1
 #bidirectional: false

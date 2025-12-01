@@ -56,7 +56,10 @@ class GNNDataLoader:
         """
         OGBN 데이터셋 로드 (OGBN-Arxiv, OGBN-Products)
         """
-        dataset = PygNodePropPredDataset(name=self.name, root=self.root)
+        transform = None
+        if self.name == "ogbn-arxiv":
+            transform = T.Compose([T.ToUndirected()])
+        dataset = PygNodePropPredDataset(name=self.name, root=self.root, transform=transform)
         data = dataset[0]
         split_idx = dataset.get_idx_split()
 

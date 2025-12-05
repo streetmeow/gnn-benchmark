@@ -23,7 +23,7 @@ class GAT(BaseNN):
     def _build_layers(self):
         # input → hidden
         self.layers.append(
-            GATConv(self.in_dim, self.hidden_dim, heads=self.heads, concat=self.concat)
+            GATConv(self.in_dim, self.hidden_dim, heads=self.heads, concat=self.concat, dropout=0.0)
         )
         if self.use_batchnorm:
             out_dim = self.hidden_dim * self.heads if self.concat else self.hidden_dim
@@ -32,7 +32,7 @@ class GAT(BaseNN):
         # hidden → hidden
         for _ in range(self.num_layers - 2):
             self.layers.append(
-                GATConv(self.hidden_dim, self.hidden_dim, heads=self.heads, concat=self.concat)
+                GATConv(self.hidden_dim, self.hidden_dim, heads=self.heads, concat=self.concat, dropout=0.0)
             )
             if self.use_batchnorm:
                 out_dim = self.hidden_dim * self.heads if self.concat else self.hidden_dim
@@ -40,5 +40,5 @@ class GAT(BaseNN):
 
         # hidden → output (heads=1, concat=False)
         self.layers.append(
-            GATConv(self.hidden_dim, self.out_dim, heads=1, concat=False)
+            GATConv(self.hidden_dim, self.out_dim, heads=1, concat=False, dropout=0.0)
         )

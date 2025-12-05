@@ -1,5 +1,5 @@
 import torch
-from torch_geometric.datasets import Planetoid, Actor
+from torch_geometric.datasets import Planetoid, Actor, WebKB
 from ogb.nodeproppred import PygNodePropPredDataset
 from torch_geometric.loader import NeighborLoader
 from omegaconf import DictConfig
@@ -39,10 +39,60 @@ class GNNDataLoader:
             self._load_actor()
         elif self.name in ["ogbn-arxiv", "ogbn-products"]:
             self._load_ogbn()
+        elif self.name in ["texas", "cornell"]:
+            self._load_webkb()
         else:
             raise ValueError(f"Unsupported dataset name: {self.name}")
 
         return self.data, self.num_classes
+
+    def _load_webkb(self):
+        """
+        WebKB 데이터셋 로드 (Texas, Cornell)
+        """
+        from torch_geometric.transforms import AddSelfLoops
+        dataset = WebKB(root=f"{self.root}/{self.name}", name=self.name.capitalize())
+        data = dataset[0]
+        data = AddSelfLoops()(data)  # 자기 자신으로의 엣지 추가
+        data.x = data.x.float()  # 특성 형식 변환
+
+         # y가 one-hot이면 argmax로 변환
+        if data.y.dim() == 2:
+            data.y = data.y.argmax(dim=-1)
+
+        # y를 (N,) long 텐서로 강제
+        data.y = data.y.view(-1).long()
+
+        # Texas/Cornell num_classes = 5
+        num_classes = int(data.y.max().item() + 1)
+
+        if hasattr(data, "train_mask") and hasattr(data, "val_mask") and hasattr(data, "test_mask"):
+            # WebKB는 종종 [N, num_splits] 형태로 마스크 제공함
+            if data.train_mask.dim() == 2:
+                # 첫 번째 split만 사용
+                data.train_mask = data.train_mask[:, 0]
+                data.val_mask = data.val_mask[:, 0]
+                data.test_mask = data.test_mask[:, 0]
+
+            # bool 타입으로 강제
+            data.train_mask = data.train_mask.bool()
+            data.val_mask = data.val_mask.bool()
+            data.test_mask = data.test_mask.bool()
+
+        else:
+            # 마스크가 아예 없으면 랜덤 split 생성
+            num_nodes = data.num_nodes
+            perm = torch.randperm(num_nodes)
+
+            train_end = int(0.6 * num_nodes)
+            val_end = int(0.8 * num_nodes)
+
+            data.train_mask = self.idx_to_mask(perm[:train_end], num_nodes)
+            data.val_mask = self.idx_to_mask(perm[train_end:val_end], num_nodes)
+            data.test_mask = self.idx_to_mask(perm[val_end:], num_nodes)
+
+        self.data = data
+        self.num_classes = num_classes
 
     def _load_planetoid(self):
         """

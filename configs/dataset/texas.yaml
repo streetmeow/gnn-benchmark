@@ -1,0 +1,4 @@
+# configs/dataset/dataset_base.yaml
+name: texas
+root: ./dataset
+use_sampler: false

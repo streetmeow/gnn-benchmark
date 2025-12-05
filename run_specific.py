@@ -25,13 +25,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [2],                 # 2-layer 더 안정적
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.01, 0.005],
+        "lr": [0.01],
 
         "dropout": [0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4, 5e-5],
 
     },
 
@@ -39,13 +39,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [2, 3],
 
-        "hidden": [128],
+        "hidden": [32, 64, 128, 192],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.001, 0.002, 0.005, 0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2, 0.3, 0.5],
 
-        "wd": [5e-4],
+        "wd": [0, 5e-5, 5e-4, 1e-3],
 
     },
 
@@ -53,11 +53,11 @@ HP_SEARCH_SPACE = {
 
         "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.001, 0.0005],
+        "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5, 5e-4],
 
@@ -65,11 +65,11 @@ HP_SEARCH_SPACE = {
 
     ("citeseer", "graphsage"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
         "hidden": [128],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.001],
 
         "dropout": [0.5],
 
@@ -87,13 +87,13 @@ HP_SEARCH_SPACE = {
 
     ("cora", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
         "hidden": [128],
 
-        "lr": [0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5, 5e-4],
 
@@ -101,15 +101,15 @@ HP_SEARCH_SPACE = {
 
     ("cora", "gat"): {
 
-        "layer": [3],
+        "layer": [2, 3],
 
-        "hidden": [128],
+        "hidden": [8, 16],
 
-        "lr": [0.01, 0.001, 0.005],
+        "lr": [0.001, 0.002, 0.005, 0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2, 0.3, 0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [0, 5e-5, 5e-4, 1e-3, 1e-5],
 
     },
 
@@ -119,9 +119,9 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.001, 0.0005, 0.005],
+        "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-5, 5e-4],
 
@@ -133,11 +133,11 @@ HP_SEARCH_SPACE = {
 
         "hidden": [64, 128],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
         "dropout": [0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4],
 
     },
 
@@ -151,13 +151,13 @@ HP_SEARCH_SPACE = {
 
     ("pubmed", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
         "lr": [0.01, 0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-4],
 
@@ -167,27 +167,27 @@ HP_SEARCH_SPACE = {
 
         "layer": [2, 3],
 
-        "hidden": [64, 128],
+        "hidden": [32, 64, 128, 192],
 
-        "lr": [0.01, 0.005],
+        "lr": [0.001, 0.002, 0.005, 0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2, 0.3, 0.5],
 
-        "wd": [5e-4],
+        "wd": [0, 5e-5, 5e-4, 1e-3],
 
     },
 
     ("pubmed", "gin"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
-        "lr": [0.005, 0.01],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
-        "wd": [5e-4],
+        "wd": [5e-4, 5e-5],
 
     },
 
@@ -195,13 +195,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [2, 3],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
         "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5],
+        "wd": [5e-4],
 
     },
 
@@ -215,29 +215,29 @@ HP_SEARCH_SPACE = {
 
     ("actor", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
         "hidden": [128],
 
-        "lr": [0.001, 0.005],
+        "lr": [0.001],
 
         "dropout": [0.5, 0.2],  # dropout 영향 명확히 긍정적
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4],
 
     },
 
     ("actor", "gat"): {
 
-        "layer": [2],
+        "layer": [2, 3],
 
-        "hidden": [64, 128],
+        "hidden": [32, 64, 128, 192],
 
-        "lr": [0.005, 0.01],
+        "lr": [0.001, 0.002, 0.005, 0.01],
 
-        "dropout": [0.5, 0.2],
+        "dropout": [0.2, 0.3, 0.5],
 
-        "wd": [5e-4],
+        "wd": [0, 5e-5, 5e-4, 1e-3],
 
     },
 
@@ -245,13 +245,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
         "lr": [0.01, 0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4],
 
     },
 
@@ -259,11 +259,11 @@ HP_SEARCH_SPACE = {
 
         "layer": [3],   # actor에서 GraphSAGE는 3 layer 우세
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-5, 5e-4],
 
@@ -283,9 +283,9 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-5],
 
@@ -295,11 +295,11 @@ HP_SEARCH_SPACE = {
 
         "layer": [3],
 
-        "hidden": [128, 64],
+        "hidden": [128],
 
-        "lr": [0.001, 0.005],
+        "lr": [0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5],
 
@@ -307,15 +307,15 @@ HP_SEARCH_SPACE = {
 
     ("ogbn-products", "gin"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
         "hidden": [128],
 
         "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-5],
 
     },
 
@@ -325,9 +325,9 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5],
 
@@ -343,43 +343,43 @@ HP_SEARCH_SPACE = {
 
     ("ogbn-arxiv", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
-        "hidden": [128],
+        "hidden": [256, 512],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.3, 0.5],
 
-        "wd": [5e-5],
+        "wd": [5e-5, 0],
 
     },
 
     ("ogbn-arxiv", "gat"): {
 
-        "layer": [3],
+        "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5],
+        "wd": [5e-5, 0],
 
     },
 
     ("ogbn-arxiv", "gin"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
-        "hidden": [128],
+        "hidden": [256],
 
         "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-5, 0],
 
     },
 
@@ -387,13 +387,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [3],
 
-        "hidden": [128],
+        "hidden": [256],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.001, 0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-5],
 
     },
 
@@ -403,12 +403,20 @@ HP_SEARCH_SPACE = {
 # 🔥 2) 공통: epoch 설정
 # ============================================================
 EPOCH_TABLE = {
-    "ogbn-products": 100,
-    "ogbn-arxiv": 80,
-    "pubmed": 140,
-    "actor": 250,
-    "citeseer": 180,
-    "cora": 150,
+    "ogbn-products": 4000,
+    "ogbn-arxiv": 2500,
+    "pubmed": 1000,
+    "actor": 1000,
+    "citeseer": 300,
+    "cora": 200,
+}
+PATIENCE_TABLE = {
+    "ogbn-products": 300,
+    "ogbn-arxiv": 200,
+    "pubmed": 100,
+    "actor": 150,
+    "citeseer": 50,
+    "cora": 50,
 }
 
 
@@ -438,8 +446,8 @@ def run_grid_search(target_datasets=None, target_models=None):
     with initialize(version_base=None, config_path="configs"):
 
         for (dataset, model) in all_pairs:
-            if dataset == "ogbn-products":
-                continue  # 시간 관계상 ogbn-products는 제외
+            # if dataset == "ogbn-products":
+            #     continue
 
             hp = HP_SEARCH_SPACE[(dataset, model)]
 
@@ -455,6 +463,7 @@ def run_grid_search(target_datasets=None, target_models=None):
 
             # epoch 설정
             epochs = EPOCH_TABLE[dataset]
+            patience = PATIENCE_TABLE[dataset]
 
             # layer 개수대로 반복 (예: [2], [2,3])
             for layer in hp["layer"]:
@@ -479,19 +488,24 @@ def run_grid_search(target_datasets=None, target_models=None):
                         f"model.dropout={dropout}",
                         f"train.lr={lr}",
                         f"train.weight_decay={wd}",
+                        f"train.patience={patience}",
 
                         # epochs
                         f"train.epochs={epochs}",
                     ]
 
                     # sampler 여부
-                    is_large = dataset in ["ogbn-products", "ogbn-arxiv"]
+                    is_large = dataset in ["ogbn-products"]
                     if is_large or model == "graphsage":
                         overrides.append("dataset.use_sampler=true")
                         bs = 1024 if is_large else 512
                         overrides.append(f"sampler.batch_size={bs}")
                     else:
                         overrides.append("dataset.use_sampler=false")
+                    if dataset == "ogbn-arxiv":
+                        overrides.append("train.use_batchnorm=true")
+                    if dataset in ["actor", "citeseer"] and model == "gat":
+                        overrides.append("train.use_batchnorm=true")
 
                     # layer-specific model sizes
                     if layer == 2:
@@ -518,11 +532,11 @@ def run_grid_search(target_datasets=None, target_models=None):
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
     gc.collect()
     torch.cuda.empty_cache()
 
     # 필요하면 일부만 선택 가능:
-    # run_grid_search(target_datasets=["cora"], target_models=["gcn"])
+    run_grid_search(target_datasets=["cora", "citeseer", "actor"], target_models=["gat"])
 
-    run_grid_search()
+    # run_grid_search()

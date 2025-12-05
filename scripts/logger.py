@@ -64,6 +64,7 @@ class Logger:
         dataset_name = cfg.dataset.name.replace("/", "_")
         experiment_name = cfg.experiment.wandb_name
         seed = cfg.seed
+
         lr = cfg.train.lr
         layer_num = cfg.model.num_layers
         run_name = \
@@ -71,9 +72,11 @@ class Logger:
         group_name = f"{experiment_name}_{model_name}"
 
         # 2. 'group' 이름 조립 (전략 + 모델 + 데이터셋)
-        tags = [model_name, dataset_name, str(layer_num) + "layers", "v12"]
+        tags = [model_name, dataset_name, str(layer_num) + "layers", "v14"]
         if cfg.dataset.get("use_sampler", False):
             tags.append("sampler")
+        if cfg.train.get("use_batchnorm", False):
+            tags.append("batchnorm")
 
         # # 3. 'name' 이름 조립 (훈련 + 시드 + 타임스탬프)
         # kst = datetime.timezone(datetime.timedelta(hours=9))

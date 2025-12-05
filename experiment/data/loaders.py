@@ -3,6 +3,7 @@ from torch_geometric.datasets import Planetoid, Actor
 from ogb.nodeproppred import PygNodePropPredDataset
 from torch_geometric.loader import NeighborLoader
 from omegaconf import DictConfig
+import torch_geometric.transforms as T
 
 
 class GNNDataLoader:

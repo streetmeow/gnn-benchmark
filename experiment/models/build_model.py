@@ -12,16 +12,20 @@ def build_model(cfg, in_dim, out_dim):
     hidden = cfg.model.hidden_dim
     layers = cfg.model.num_layers
     dropout = cfg.model.dropout
+    batchnorm = cfg.train.get("use_batchnorm", False)
     activation = cfg.model.get("activation", "relu")  # 기본 relu
 
     if name == "gcn":
+        if batchnorm:
+            print("⚠️ Warning: GCN with BatchNorm enabled.")
         return GCN(
             in_dim=in_dim,
             hidden_dim=hidden,
             out_dim=out_dim,
             num_layers=layers,
             dropout=dropout,
-            activation=activation
+            activation=activation,
+            use_batchnorm=batchnorm
         )
 
     elif name == "gat":
@@ -36,7 +40,8 @@ def build_model(cfg, in_dim, out_dim):
             dropout=dropout,
             activation=activation,
             heads=heads,
-            concat=concat
+            concat=concat,
+            use_batchnorm=batchnorm
         )
 
     elif name == "graphsage":

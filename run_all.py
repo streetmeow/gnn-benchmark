@@ -25,25 +25,25 @@ HP_SEARCH_SPACE = {
 
         "layer": [2],                 # 2-layer 더 안정적
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.01, 0.005],
+        "lr": [0.01],
 
         "dropout": [0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4, 5e-5],
 
     },
 
     ("citeseer", "gat"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
         "hidden": [128],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.005, 0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-4],
 
@@ -53,11 +53,11 @@ HP_SEARCH_SPACE = {
 
         "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.001, 0.0005],
+        "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5, 5e-4],
 
@@ -65,11 +65,11 @@ HP_SEARCH_SPACE = {
 
     ("citeseer", "graphsage"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
         "hidden": [128],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.001],
 
         "dropout": [0.5],
 
@@ -87,13 +87,13 @@ HP_SEARCH_SPACE = {
 
     ("cora", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
         "hidden": [128],
 
-        "lr": [0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5, 5e-4],
 
@@ -105,11 +105,11 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.01, 0.001, 0.005],
+        "lr": [0.005],
 
         "dropout": [0.2, 0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4],
 
     },
 
@@ -119,9 +119,9 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.001, 0.0005, 0.005],
+        "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-5, 5e-4],
 
@@ -133,11 +133,11 @@ HP_SEARCH_SPACE = {
 
         "hidden": [64, 128],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
         "dropout": [0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4],
 
     },
 
@@ -151,13 +151,13 @@ HP_SEARCH_SPACE = {
 
     ("pubmed", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
         "lr": [0.01, 0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-4],
 
@@ -167,9 +167,9 @@ HP_SEARCH_SPACE = {
 
         "layer": [2, 3],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
-        "lr": [0.01, 0.005],
+        "lr": [0.01],
 
         "dropout": [0.2, 0.5],
 
@@ -179,15 +179,15 @@ HP_SEARCH_SPACE = {
 
     ("pubmed", "gin"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
-        "lr": [0.005, 0.01],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
-        "wd": [5e-4],
+        "wd": [5e-4, 5e-5],
 
     },
 
@@ -195,13 +195,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [2, 3],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
         "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5],
+        "wd": [5e-4],
 
     },
 
@@ -215,15 +215,15 @@ HP_SEARCH_SPACE = {
 
     ("actor", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
         "hidden": [128],
 
-        "lr": [0.001, 0.005],
+        "lr": [0.001],
 
         "dropout": [0.5, 0.2],  # dropout 영향 명확히 긍정적
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4],
 
     },
 
@@ -231,11 +231,11 @@ HP_SEARCH_SPACE = {
 
         "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
         "lr": [0.005, 0.01],
 
-        "dropout": [0.5, 0.2],
+        "dropout": [0.5],
 
         "wd": [5e-4],
 
@@ -245,13 +245,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [64],
 
         "lr": [0.01, 0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-4],
 
     },
 
@@ -259,11 +259,11 @@ HP_SEARCH_SPACE = {
 
         "layer": [3],   # actor에서 GraphSAGE는 3 layer 우세
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-5, 5e-4],
 
@@ -283,9 +283,9 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
         "wd": [5e-5],
 
@@ -295,11 +295,11 @@ HP_SEARCH_SPACE = {
 
         "layer": [3],
 
-        "hidden": [128, 64],
+        "hidden": [128],
 
-        "lr": [0.001, 0.005],
+        "lr": [0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5],
 
@@ -307,15 +307,15 @@ HP_SEARCH_SPACE = {
 
     ("ogbn-products", "gin"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
         "hidden": [128],
 
         "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.5],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-5],
 
     },
 
@@ -325,9 +325,9 @@ HP_SEARCH_SPACE = {
 
         "hidden": [128],
 
-        "lr": [0.001, 0.005, 0.01],
+        "lr": [0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
         "wd": [5e-5],
 
@@ -343,43 +343,43 @@ HP_SEARCH_SPACE = {
 
     ("ogbn-arxiv", "gcn"): {
 
-        "layer": [2, 3],
+        "layer": [3],
 
-        "hidden": [128],
+        "hidden": [512],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.3],
 
-        "wd": [5e-5],
+        "wd": [5e-5, 0],
 
     },
 
     ("ogbn-arxiv", "gat"): {
 
-        "layer": [3],
+        "layer": [2],
 
-        "hidden": [64, 128],
+        "hidden": [128],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.01],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5],
+        "wd": [5e-5, 0],
 
     },
 
     ("ogbn-arxiv", "gin"): {
 
-        "layer": [2, 3],
+        "layer": [2],
 
-        "hidden": [128],
+        "hidden": [256],
 
         "lr": [0.001],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-5, 0],
 
     },
 
@@ -387,13 +387,13 @@ HP_SEARCH_SPACE = {
 
         "layer": [3],
 
-        "hidden": [128],
+        "hidden": [256],
 
-        "lr": [0.001, 0.01, 0.005],
+        "lr": [0.001, 0.005],
 
-        "dropout": [0.2, 0.5],
+        "dropout": [0.2],
 
-        "wd": [5e-5, 5e-4],
+        "wd": [5e-5],
 
     },
 
@@ -408,8 +408,8 @@ def run_grid_search():
 
     # 1. 탐색 공간 정의
     search_space = {
-        # "dataset": ["cora", "citeseer", "pubmed", "ogbn-arxiv", "ogbn-products", "actor"],
-        "dataset": ["ogbn-arxiv"],
+        "dataset": ["cora", "citeseer", "pubmed", "ogbn-arxiv", "ogbn-products", "actor"],
+        # "dataset": ["ogbn-arxiv"],
         "model": ["gcn", "graphsage", "gat", "gin"],
         "seed": [5],
         # 하이퍼파라미터

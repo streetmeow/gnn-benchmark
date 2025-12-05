@@ -52,3 +52,5 @@ echo "$DOCKER_TOKEN" | docker login -u streetmeow --password-stdin
 docker push streetmeow/gnn-bench:v1.1
 unset DOCKER_TOKEN
 ```
+
+citeseer + gat, ogbn-arxiv + all model 에서 batch norm 이 우세

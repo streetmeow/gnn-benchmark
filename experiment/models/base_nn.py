@@ -10,7 +10,8 @@ class BaseNN(nn.Module):
         out_dim,
         num_layers,
         dropout=0.5,
-        activation="relu"
+        activation="relu",
+        use_batchnorm=False
     ):
         super().__init__()
 
@@ -20,11 +21,13 @@ class BaseNN(nn.Module):
         self.num_layers = num_layers
         self.dropout = dropout
         self.act_name = activation.lower()
+        self.use_batchnorm = use_batchnorm
 
         # activation 함수 선택
         self.activation = self._get_activation(self.act_name)
 
         # 하위 모델이 conv layer 를 구성함
+        self.bns = nn.ModuleList()
         self.layers = nn.ModuleList()
         self._build_layers()
 
@@ -44,6 +47,8 @@ class BaseNN(nn.Module):
         for i, conv in enumerate(self.layers):
             x = conv(x, edge_index)
             if i != len(self.layers) - 1:          # 마지막 레이어 제외
+                if len(self.bns) > i and self.use_batchnorm:
+                    x = self.bns[i](x)
                 x = self.activation(x)
                 x = F.dropout(x, p=self.dropout, training=self.training)
         return x

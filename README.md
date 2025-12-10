@@ -53,4 +53,6 @@ docker push streetmeow/gnn-bench:v1.1
 unset DOCKER_TOKEN
 ```
 
-citeseer + gat, ogbn-arxiv + all model 에서 batch norm 이 우세
+citeseer + gat, ogbn-arxiv + all model 에서 batch norm 이 우세.
+
+다만 texas, cornell 은 batch norm 뿐만 아니라 sampling 하기에도 너무 작더라

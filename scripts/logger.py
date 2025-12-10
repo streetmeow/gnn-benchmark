@@ -9,6 +9,10 @@ from omegaconf import DictConfig, OmegaConf
 from hydra.core.hydra_config import HydraConfig
 from typing import Optional, Dict, Any
 import socket
+import subprocess
+import psutil
+import threading
+import time
 
 
 log = logging.getLogger(__name__)
@@ -36,18 +40,20 @@ class Logger:
         self.wandb_enabled = cfg.logging.use_wandb
 
         # Hydra가 생성한 최종 출력 디렉토리 경로를 가져옴
-        try:
-            self.output_dir = HydraConfig.get().runtime.output_dir
-        except Exception:
-            # Hydra가 아닌 환경(e.g., 일반 Python 실행)을 위한 폴백
-            kst = datetime.timezone(datetime.timedelta(hours=9))
-            self.output_dir = os.path.join("./output_logs", datetime.datetime.now(kst).strftime('%Y-%m-%d_%H-%M-%S'))
-            os.makedirs(self.output_dir, exist_ok=True)
-            log.warning(f"Hydra output_dir를 찾을 수 없습니다. 현재 디렉토리 사용: {self.output_dir}")
+        self.output_dir = self.setup_output_dir()
 
         # (Req 3) 에폭별 메트릭을 저장할 로컬 CSV 파일 경로
         self.epoch_csv_path = os.path.join(self.output_dir, "epoch_metrics.csv")
         self.epoch_csv_header_written = False
+        self.tags = []
+        self._monitor_running = False
+        self._monitor_thread = None
+        self.system_stats = {
+            "gpu_util": [],
+            "gpu_mem": [],
+            "cpu": [],
+            "ram": []
+        }
 
         if self.wandb_enabled:
             self._init_wandb()
@@ -55,8 +61,17 @@ class Logger:
         # (Req 1) 소스 코드 아카이빙 실행
         self.archive_source_code()
 
-    def _init_wandb(self):
-        """WandB 세션을 초기화 (API Key는 환경변수로 처리)."""
+    def setup_output_dir(self) -> str:
+        try:
+            return HydraConfig.get().runtime.output_dir
+        except Exception:
+            kst = datetime.timezone(datetime.timedelta(hours=9))
+            output_dir = os.path.join("./output_logs", datetime.datetime.now(kst).strftime('%Y-%m-%d_%H-%M-%S'))
+            os.makedirs(output_dir, exist_ok=True)
+            log.warning(f"Hydra output_dir를 찾을 수 없습니다. 현재 디렉토리 사용: {output_dir}")
+            return output_dir
+
+    def configure_wandb(self):
         cfg = self.cfg
 
         # 1. Config에서 '재료'를 긁어옴 (스크립트에서 조립)
@@ -64,19 +79,128 @@ class Logger:
         dataset_name = cfg.dataset.name.replace("/", "_")
         experiment_name = cfg.experiment.wandb_name
         seed = cfg.seed
-
         lr = cfg.train.lr
         layer_num = cfg.model.num_layers
-        run_name = \
-            f"{model_name}_{dataset_name}_lr{lr}_ly{layer_num}_wd{cfg.train.weight_decay}_dr{cfg.model.dropout}_hd{cfg.model.hidden_dim}"
+        run_name = (
+            f"{model_name}_{dataset_name}_lr{lr}"
+            f"_ly{layer_num}_wd{cfg.train.weight_decay}"
+            f"_dr{cfg.model.dropout}_hd{cfg.model.hidden_dim}"
+        )
         group_name = f"{experiment_name}_{model_name}"
 
-        # 2. 'group' 이름 조립 (전략 + 모델 + 데이터셋)
-        tags = [model_name, dataset_name, str(layer_num) + "layers", "v14"]
+        tags = [model_name, dataset_name, str(layer_num) + "layers", "seed" + str(seed)]
         if cfg.dataset.get("use_sampler", False):
             tags.append("sampler")
         if cfg.train.get("use_batchnorm", False):
             tags.append("batchnorm")
+        self.tags = tags
+        self.extend_tags()
+        return dict(
+            project=cfg.logging.project,
+            group=group_name,
+            name=run_name,
+            tags=self.tags
+        )
+
+    def extend_tags(self):
+        pass
+
+    # ================================
+    #  System Monitoring (GPU/CPU/RAM)
+    # ================================
+
+    def _get_active_gpu_usage(self):
+        """
+        현재 Python 프로세스가 실제로 사용 중인 GPU의 utilization/memory를 반환한다.
+        CUDA_VISIBLE_DEVICES를 반영해 system GPU ID로 매핑함.
+        """
+        try:
+            # 현재 파이썬에서 활성화된 local GPU ID (보통 0)
+            local_id = torch.cuda.current_device()
+
+            # CUDA_VISIBLE_DEVICES 설정 확인
+            visible = os.environ.get("CUDA_VISIBLE_DEVICES", None)
+            if visible:
+                mapping = [int(x) for x in visible.split(",")]
+                system_gpu_id = mapping[local_id]
+            else:
+                system_gpu_id = local_id
+
+            # 해당 system_gpu_id만 nvidia-smi로 쿼리
+            cmd = (
+                f"nvidia-smi --id={system_gpu_id} "
+                f"--query-gpu=utilization.gpu,memory.used "
+                f"--format=csv,noheader,nounits"
+            )
+            out = subprocess.check_output(cmd, shell=True).decode().strip()
+
+            # 공백 제거 후 split
+            parts = [p.strip() for p in out.replace("MiB", "").replace("%", "").split(",")]
+
+            if len(parts) >= 2:
+                util = int(parts[0])
+                mem = int(parts[1])
+                return util, mem
+            else:
+                return None, None
+
+        except Exception:
+            return None, None
+
+    def start_system_monitor(self, interval: float = 5.0):
+        """
+        별도 thread로 GPU/CPU/RAM usage를 주기적으로 wandb로 기록.
+        평균/최대값 계산을 위해 내부 리스트에도 누적 저장.
+        """
+        if not self.wandb_enabled:
+            return
+
+        self._monitor_running = True
+
+        def monitor_loop():
+            while self._monitor_running:
+                metrics = {}
+
+                # GPU usage (utilization %, memory MB)
+                util, mem = self._get_active_gpu_usage()
+                if util is not None:
+                    metrics["system/gpu_util"] = util
+                    metrics["system/gpu_mem_mb"] = mem
+                    self.system_stats["gpu_util"].append(util)
+                    self.system_stats["gpu_mem"].append(mem)
+
+                # CPU usage
+                try:
+                    cpu_val = psutil.cpu_percent(interval=0.1)
+                    metrics["system/cpu"] = cpu_val
+                    self.system_stats["cpu"].append(cpu_val)
+                except Exception:
+                    pass
+
+                # RAM usage
+                try:
+                    ram_val = psutil.virtual_memory().percent
+                    metrics["system/ram"] = ram_val
+                    self.system_stats["ram"].append(ram_val)
+                except Exception:
+                    pass
+
+                if metrics:
+                    wandb.log(metrics)
+
+                time.sleep(interval)
+
+        self._monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
+        self._monitor_thread.start()
+
+    def stop_system_monitor(self):
+        """Monitoring thread 종료"""
+        if hasattr(self, "_monitor_running"):
+            self._monitor_running = False
+
+    def _init_wandb(self):
+        """WandB 세션을 초기화 (API Key는 환경변수로 처리)."""
+        cfg = self.cfg
 
         # # 3. 'name' 이름 조립 (훈련 + 시드 + 타임스탬프)
         # kst = datetime.timezone(datetime.timedelta(hours=9))
@@ -84,11 +208,9 @@ class Logger:
         # run_name = f"{train_name}_seed_{seed}_{timestamp}"
 
         try:
+            wandb_args = self.configure_wandb()
             wandb.init(
-                project=cfg.logging.project,
-                group=group_name,
-                name=run_name,
-                tags=tags,
+                **wandb_args,
                 config=OmegaConf.to_container(cfg, resolve=True),
                 reinit=True  # (순차 실행 시 재초기화 허용)
             )
@@ -96,7 +218,8 @@ class Logger:
                 "host_name": socket.gethostname(),  # 어느 서버에서 돌렸는지 (ex: lab-server-02)
                 "output_dir": os.path.abspath(self.output_dir)  # 로컬 절대 경로
             }, allow_val_change=True)
-            log.info(f"WandB initialized. Group: {experiment_name}, Run: {run_name}")
+            log.info(f"WandB initialized. Args: {wandb_args}")
+            self.start_system_monitor(interval=5.0)
         except wandb.errors.AuthenticationError:
             log.error("WandB AuthenticationError. WANDB_API_KEY 환경 변수가 올바르게 설정되었는지 확인하세요.")
             self.wandb_enabled = False
@@ -273,6 +396,26 @@ class Logger:
 
     def finish(self):
         """실험 종료 시 WandB 세션을 닫습니다."""
-        if self.wandb_enabled and wandb.run:
-            wandb.finish()
-            log.info("WandB run finished.")
+        if self.wandb_enabled:
+
+            # 모니터링 종료
+            self.stop_system_monitor()
+
+            # 평균/최대 계산 후 summary 업데이트
+            try:
+                summary_stats = {}
+                for key, arr in self.system_stats.items():
+                    if len(arr) > 0:
+                        summary_stats[f"system/{key}_avg"] = sum(arr) / len(arr)
+                        summary_stats[f"system/{key}_max"] = max(arr)
+
+                wandb.summary.update(summary_stats)
+                log.info(f"System summary stats saved: {summary_stats}")
+
+            except Exception as e:
+                log.error(f"Failed to compute system summary stats: {e}")
+
+            # wandb 종료
+            if wandb.run:
+                wandb.finish()
+                log.info("WandB run finished.")

@@ -1,6 +1,6 @@
 # models/model_builder.py
 
-from experiment.models.architectures import GCN, GAT, GraphSAGE, GIN
+from experiment.models.architectures import GCN, GAT, GraphSAGE, GIN, SGC
 
 
 def build_model(cfg, in_dim, out_dim):
@@ -65,6 +65,16 @@ def build_model(cfg, in_dim, out_dim):
             num_layers=layers,
             dropout=dropout,
             activation=activation
+        )
+    elif name == "sgc":
+        return SGC(
+            in_dim=in_dim,
+            hidden_dim=hidden,  # 사실 사용 안 함
+            out_dim=out_dim,
+            num_layers=layers,
+            dropout=dropout,
+            activation=activation,
+            use_batchnorm=batchnorm
         )
 
     else:

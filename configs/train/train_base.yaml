@@ -8,3 +8,4 @@ use_scheduler: true
 kd_type: basic
 patience: 100
 use_batchnorm: false
+use_early_stopping: true

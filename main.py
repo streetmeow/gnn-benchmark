@@ -13,6 +13,7 @@ import wandb
 # (이 파일들은 experiment/ 디렉토리에 있다고 가정)
 from scripts import BaseExperiment, Logger
 from scripts.experiments import SimpleExperiment
+from scripts.loggers import BaseLogger
 import os
 
 # from experiment.ensemble_experiment import EnsembleExperiment # (추후 앙상블 실험 추가 시)
@@ -41,7 +42,7 @@ def run_experiment(cfg: DictConfig):
     3. 실험 전략 선택
     4. 실행 위임
     """
-    logger = Logger(cfg)
+    logger = BaseLogger(cfg)
     logger.setup_local_file_logging()  # (로거 초기화)
     # --- 1. 글로벌 환경 설정 ---
     set_seed(cfg.seed)

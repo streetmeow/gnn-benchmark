@@ -29,7 +29,7 @@ class BaseTrainer(ABC):
 
     def __init__(self, model: nn.Module, optimizer: optim.Optimizer, evaluator: Evaluator, device: torch.device,
                  scheduler: optim.lr_scheduler._LRScheduler = None, logger: Optional[Logger] = None,
-                 save_checkpoint: bool = True, patience=100):
+                 save_checkpoint: bool = True, patience=100, use_early_stopping=True):
 
         self.model = model
         self.optimizer = optimizer
@@ -49,6 +49,7 @@ class BaseTrainer(ABC):
         # 훈련 재개를 위해 시작 에포크를 변수로 관리 (기본값 1)
         self.start_epoch = 1
         self.patience = patience
+        self.use_early_stopping = use_early_stopping
 
     @abstractmethod
     def _compute_loss(self, batch: Data) -> tuple[torch.Tensor, dict]:
@@ -96,7 +97,8 @@ class BaseTrainer(ABC):
             valid_mode: Literal["full", "mini"]):
 
         valid_data_full = valid_loader[0] if valid_mode == "full" else None
-        early_stopper = EarlyStopping(patience=self.patience, mode='max')
+        if self.use_early_stopping:
+            early_stopper = EarlyStopping(patience=self.patience, mode='max')
 
         # 시작 epoch 를 변수에서 가져옴 (Resume 시 1이 아닐 수 있음)
         for epoch in range(self.start_epoch, epochs + 1):
@@ -137,10 +139,11 @@ class BaseTrainer(ABC):
             # [Fix] save_snapshot 하나로 통합
             self.save_snapshot(epoch, current_metric, is_best)
             # 6. Early Stopping
-            stop = early_stopper.step(current_metric, epoch)
-            if stop:
-                log.warning(f" Early stopping triggered at epoch {epoch}.")
-                break
+            if self.use_early_stopping:
+                stop = early_stopper.step(current_metric, epoch)
+                if stop:
+                    log.warning(f" Early stopping triggered at epoch {epoch}.")
+                    break
 
         log.info(f"Phase complete. Best Valid Acc ({self.best_metric_value:.4f}) at epoch {self.best_epoch}")
 

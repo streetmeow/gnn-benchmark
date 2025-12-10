@@ -11,6 +11,7 @@ import os
 
 # [핵심] main.py에서 알맹이 함수 가져오기
 from main import run_experiment
+from run_settings import HP_TEST_SEARCH_SPACE
 
 
 HP_SEARCH_SPACE = {
@@ -36,17 +37,11 @@ HP_SEARCH_SPACE = {
     },
 
     ("citeseer", "gat"): {
-
         "layer": [2, 3],
-
         "hidden": [32, 64, 128, 192],
-
-        "lr": [0.001, 0.002, 0.005, 0.01],
-
-        "dropout": [0.2, 0.3, 0.5],
-
-        "wd": [0, 5e-5, 5e-4, 1e-3],
-
+        "lr": [0.0005, 0.01, 0.001],
+        "dropout": [0.3, 0.5, 0.2],
+        "wd": [0, 5e-5, 5e-4, 0.001],
     },
 
     ("citeseer", "gin"): {
@@ -100,17 +95,11 @@ HP_SEARCH_SPACE = {
     },
 
     ("cora", "gat"): {
-
         "layer": [2, 3],
-
-        "hidden": [8, 16],
-
-        "lr": [0.001, 0.002, 0.005, 0.01],
-
+        "hidden": [32, 192, 64],
+        "lr": [0.005, 0.001, 0.0005],
         "dropout": [0.2, 0.3, 0.5],
-
-        "wd": [0, 5e-5, 5e-4, 1e-3, 1e-5],
-
+        "wd": [0, 5e-5, 5e-4],
     },
 
     ("cora", "gin"): {
@@ -163,18 +152,12 @@ HP_SEARCH_SPACE = {
 
     },
 
-    ("pubmed", "gat"): {
-
-        "layer": [2, 3],
-
-        "hidden": [32, 64, 128, 192],
-
-        "lr": [0.001, 0.002, 0.005, 0.01],
-
+    ("pubmed", "gat"):  {
+        "layer":   [2, 3],
+        "hidden":  [64, 128],
+        "lr":      [0.005, 0.01],
         "dropout": [0.2, 0.3, 0.5],
-
-        "wd": [0, 5e-5, 5e-4, 1e-3],
-
+        "wd":      [5e-5, 5e-4],
     },
 
     ("pubmed", "gin"): {
@@ -228,17 +211,11 @@ HP_SEARCH_SPACE = {
     },
 
     ("actor", "gat"): {
-
-        "layer": [2, 3],
-
-        "hidden": [32, 64, 128, 192],
-
-        "lr": [0.001, 0.002, 0.005, 0.01],
-
+        "layer":   [2, 3],
+        "hidden":  [64, 128, 192],
+        "lr":      [0.005, 0.01, 0.002],
         "dropout": [0.2, 0.3, 0.5],
-
-        "wd": [0, 5e-5, 5e-4, 1e-3],
-
+        "wd":      [0, 5e-5],
     },
 
     ("actor", "gin"): {
@@ -356,17 +333,11 @@ HP_SEARCH_SPACE = {
     },
 
     ("ogbn-arxiv", "gat"): {
-
-        "layer": [2],
-
-        "hidden": [128],
-
-        "lr": [0.01],
-
-        "dropout": [0.2],
-
-        "wd": [5e-5, 0],
-
+        "layer":   [2, 3],
+        "hidden":  [128, 64],
+        "lr":      [0.005, 0.01],
+        "dropout": [0.2, 0.5],
+        "wd":      [0, 5e-5],
     },
 
     ("ogbn-arxiv", "gin"): {
@@ -396,19 +367,116 @@ HP_SEARCH_SPACE = {
         "wd": [5e-5],
 
     },
+    ("texas", "gcn"): {
+        "layer": [2, 3],
+        "hidden": [32, 64, 128, 256],
+        "lr": [0.001, 0.005, 0.01, 0.02],
+        "dropout": [0.3, 0.5, 0.7],
+        "wd": [0, 1e-6, 5e-6, 1e-5, 5e-5, 5e-4]
+    },
+
+    ("texas", "graphsage"): {
+        "layer": [2, 3],
+        "hidden": [32, 64, 128, 256],
+        "lr": [0.001, 0.005, 0.01, 0.02],
+        "dropout": [0.3, 0.5, 0.7],
+        "wd": [0, 1e-6, 5e-6, 1e-5, 5e-5, 5e-4]
+    },
+
+    ("cornell", "gcn"): {
+        "layer": [2, 3],
+        "hidden": [32, 64, 128, 256],
+        "lr": [0.001, 0.005, 0.01, 0.02],
+        "dropout": [0.3, 0.5, 0.7],
+        "wd": [0, 1e-6, 5e-6, 1e-5, 5e-5, 5e-4]
+    },
+
+    ("cornell", "graphsage"): {
+        "layer": [2, 3],
+        "hidden": [32, 64, 128, 256],
+        "lr": [0.001, 0.005, 0.01, 0.02],
+        "dropout": [0.3, 0.5, 0.7],
+        "wd": [0, 1e-6, 5e-6, 1e-5, 5e-5, 5e-4]
+    },
+    ("cornell", "sgc"): {
+        "layer": [2],
+        "hidden": [32],
+        "lr": [0.001],
+        "dropout": [0.3],
+        "wd": [0]
+    },
+    ("cornell", "sgc"): {
+        "layer": [2],
+        "hidden": [32],
+        "lr": [0.001],
+        "dropout": [0.3],
+        "wd": [0]
+    },
+    ("cornell", "sgc"): {
+        "layer": [2],
+        "hidden": [32],
+        "lr": [0.001],
+        "dropout": [0.3],
+        "wd": [0]
+    },
+    ("cornell", "sgc"): {
+        "layer": [2],
+        "hidden": [32],
+        "lr": [0.001],
+        "dropout": [0.3],
+        "wd": [0]
+    },
+    ("cornell", "sgc"): {
+        "layer": [2],
+        "hidden": [32],
+        "lr": [0.001],
+        "dropout": [0.3],
+        "wd": [0]
+    },
+    ("cornell", "sgc"): {
+        "layer": [2],
+        "hidden": [32],
+        "lr": [0.001],
+        "dropout": [0.3],
+        "wd": [0]
+    },
 
 }
+HP_SEARCH_SPACE = HP_TEST_SEARCH_SPACE
+
 
 # ============================================================
 # 🔥 2) 공통: epoch 설정
 # ============================================================
+# EPOCH_TABLE = {
+#     "ogbn-products": 4000,
+#     "ogbn-arxiv": 2500,
+#     "pubmed": 1000,
+#     "actor": 1000,
+#     "citeseer": 300,
+#     "cora": 200,
+#     "texas": 100,
+#     "cornell": 100,
+# }
+# EPOCH_TABLE = {
+#     "ogbn-products": 4000,
+#     "ogbn-arxiv": 2500,
+#     "pubmed": 150,
+#     "actor": 100,
+#     "citeseer": 100,
+#     "cora": 100,
+#     "texas": 50,
+#     "cornell": 50,
+# }
 EPOCH_TABLE = {
-    "ogbn-products": 4000,
-    "ogbn-arxiv": 2500,
-    "pubmed": 1000,
-    "actor": 1000,
-    "citeseer": 300,
-    "cora": 200,
+    "ogbn-products": 2,
+    "ogbn-arxiv": 5,
+    "pubmed": 50,
+    "actor": 50,
+    "citeseer": 50,
+    "cora": 50,
+    "texas": 50,
+    "cornell": 50,
 }
 PATIENCE_TABLE = {
     "ogbn-products": 300,
@@ -417,6 +485,8 @@ PATIENCE_TABLE = {
     "actor": 150,
     "citeseer": 50,
     "cora": 50,
+    "texas": 20,
+    "cornell": 20,
 }
 
 
@@ -496,7 +566,7 @@ def run_grid_search(target_datasets=None, target_models=None):
 
                     # sampler 여부
                     is_large = dataset in ["ogbn-products"]
-                    if is_large or model == "graphsage":
+                    if is_large or (model == "graphsage" and dataset not in ["texas", "cornell"]):
                         overrides.append("dataset.use_sampler=true")
                         bs = 1024 if is_large else 512
                         overrides.append(f"sampler.batch_size={bs}")
@@ -504,8 +574,10 @@ def run_grid_search(target_datasets=None, target_models=None):
                         overrides.append("dataset.use_sampler=false")
                     if dataset == "ogbn-arxiv":
                         overrides.append("train.use_batchnorm=true")
-                    if dataset in ["actor", "citeseer"] and model == "gat":
-                        overrides.append("train.use_batchnorm=true")
+                    else:
+                        overrides.append("train.use_batchnorm=false")
+                    if model == "sgc":
+                        overrides.append("train.use_early_stopping=false")
 
                     # layer-specific model sizes
                     if layer == 2:
@@ -532,11 +604,12 @@ def run_grid_search(target_datasets=None, target_models=None):
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
     gc.collect()
     torch.cuda.empty_cache()
 
     # 필요하면 일부만 선택 가능:
-    run_grid_search(target_datasets=["cora", "citeseer", "actor"], target_models=["gat"])
+    # run_grid_search(target_datasets=["cora", "citeseer", "actor", "ogbn-arxiv"], target_models=["gat"])
+    # run_grid_search(target_datasets=["cornell", "texas"], target_models=["gcn", "graphsage"])
 
-    # run_grid_search()
+    run_grid_search()

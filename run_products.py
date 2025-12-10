@@ -11,6 +11,7 @@ import os
 
 # [핵심] main.py에서 알맹이 함수 가져오기
 from main import run_experiment
+from run_settings import HP_TEST_SEARCH_SPACE
 
 
 HP_SEARCH_SPACE = {
@@ -398,6 +399,8 @@ HP_SEARCH_SPACE = {
     },
 
 }
+
+HP_SEARCH_SPACE = HP_TEST_SEARCH_SPACE
 
 # ============================================================
 # 🔥 2) 공통: epoch 설정

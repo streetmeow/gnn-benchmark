@@ -35,7 +35,7 @@ class CETrainer(BaseTrainer):
             target_logits = logits[:batch.batch_size]
             target_labels = batch.y[:batch.batch_size].squeeze().long()
         else:
-            # (Full-batch) GNNDataLoader(v2)가 보장해준 'mask' 사용
+            # (Full-batch) GNNDataLoader 가 보장해준 'mask' 사용
             target_logits = logits[batch.train_mask]
             target_labels = batch.y[batch.train_mask].squeeze().long()
 

@@ -70,7 +70,8 @@ class SimpleExperiment(BaseExperiment):
             scheduler=scheduler,
             logger=self.logger,
             save_checkpoint=cfg.experiment.save_checkpoint,
-            patience=cfg.train.get("patience", 100)
+            patience=cfg.train.get("patience", 100),
+            use_early_stopping=cfg.train.get("use_early_stopping", True)
         )
 
         # BaseTrainer의 공통 'run' 메서드 호출

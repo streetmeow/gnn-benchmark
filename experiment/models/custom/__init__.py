@@ -1,0 +1,1 @@
+from .cpf_student import CPFStudent

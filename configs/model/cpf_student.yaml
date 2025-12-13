@@ -1,0 +1,6 @@
+# configs/model/cpf_student.yaml
+name: cpf_student
+num_layers: 1      # 안 써도 되지만 framework 규약 맞추려면
+hidden_dim: 64
+dropout: 0.5
+plp_steps: 10

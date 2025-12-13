@@ -11,6 +11,7 @@ seed: 5
 gpu_id: 2
 #checkpoint_path: /app/outputs/2025-11-22/10-05-27/best_checkpoint.pth
 #checkpoint_path: /app/outputs/2025-11-22/10-53-43/best_checkpoint.pth
+teacher_checkpoint: /app/outputs
 
 hydra:
   # 1. 단일 실행 (python main.py ...)

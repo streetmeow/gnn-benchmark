@@ -78,7 +78,7 @@ class CPFTrainer(BaseTrainer):
         logits = self.model(batch.x, batch.edge_index)  # (N, C)
 
         # 2) KD loss (unlabeled nodes 기준으로 KL)
-        student_log_probs = F.log_softmax(logits, dim=-1)
+        # student_log_probs = F.log_softmax(logits, dim=-1)
 
         idx_no_train = ~self.train_mask  # True = unlabeled nodes
         kd_loss = F.mse_loss(

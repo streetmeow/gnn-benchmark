@@ -11,7 +11,7 @@ import os
 
 # [핵심] main.py에서 알맹이 함수 가져오기
 from main import run_experiment
-from run_settings import HP_TEST_SEARCH_SPACE
+from run_settings import SGC_DICT
 
 
 HP_SEARCH_SPACE = {
@@ -442,7 +442,7 @@ HP_SEARCH_SPACE = {
     },
 
 }
-HP_SEARCH_SPACE = HP_TEST_SEARCH_SPACE
+HP_SEARCH_SPACE = SGC_DICT
 
 
 # ============================================================
@@ -471,22 +471,22 @@ HP_SEARCH_SPACE = HP_TEST_SEARCH_SPACE
 EPOCH_TABLE = {
     "ogbn-products": 2,
     "ogbn-arxiv": 5,
-    "pubmed": 50,
+    "pubmed": 20,
     "actor": 50,
-    "citeseer": 50,
-    "cora": 50,
-    "texas": 50,
-    "cornell": 50,
+    "citeseer": 15,
+    "cora": 15,
+    "texas": 10,
+    "cornell": 10,
 }
 PATIENCE_TABLE = {
     "ogbn-products": 300,
     "ogbn-arxiv": 200,
-    "pubmed": 100,
+    "pubmed": 10,
     "actor": 150,
-    "citeseer": 50,
-    "cora": 50,
-    "texas": 20,
-    "cornell": 20,
+    "citeseer": 5,
+    "cora": 5,
+    "texas": 3,
+    "cornell": 3,
 }
 
 
@@ -577,7 +577,14 @@ def run_grid_search(target_datasets=None, target_models=None):
                     else:
                         overrides.append("train.use_batchnorm=false")
                     if model == "sgc":
-                        overrides.append("train.use_early_stopping=false")
+                        # overrides.append("train.use_early_stopping=false")
+                        if dataset in ["texas", "cornell"]:
+                            overrides.append("model.k_value=1")
+                        elif dataset in ["cora", "citeseer"]:
+                            overrides.append("model.k_value=2")
+                        elif dataset == "pubmed":
+                            overrides.append("model.k_value=3")
+
 
                     # layer-specific model sizes
                     if layer == 2:
@@ -610,6 +617,6 @@ if __name__ == "__main__":
 
     # 필요하면 일부만 선택 가능:
     # run_grid_search(target_datasets=["cora", "citeseer", "actor", "ogbn-arxiv"], target_models=["gat"])
-    # run_grid_search(target_datasets=["cornell", "texas"], target_models=["gcn", "graphsage"])
+    run_grid_search(target_models=["sgc"])
 
-    run_grid_search()
+    # run_grid_search()

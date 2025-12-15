@@ -388,21 +388,21 @@ HP_TEST_SEARCH_SPACE = {
         "dropout": [0.3],
         "wd": [0]
     },
-    ("cornell", "sgc"): {
+    ("citeseer", "sgc"): {
         "layer": [2],
         "hidden": [32],
         "lr": [0.001],
         "dropout": [0.3],
         "wd": [0]
     },
-    ("cornell", "sgc"): {
+    ("cora", "sgc"): {
         "layer": [2],
         "hidden": [32],
         "lr": [0.001],
         "dropout": [0.3],
         "wd": [0]
     },
-    ("cornell", "sgc"): {
+    ("pubmed", "sgc"): {
         "layer": [2],
         "hidden": [32],
         "lr": [0.001],

@@ -7,3 +7,4 @@ hidden_dim: 64
 dropout: 0.5
 activation: relu
 sizes: [15, 10]
+k_value: 2

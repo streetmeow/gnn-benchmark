@@ -5,6 +5,20 @@ from experiment.models.base_nn import BaseNN
 
 
 class SGC(BaseNN):
+    def __init__(
+        self,
+        in_dim,
+        hidden_dim,
+        out_dim,
+        num_layers,
+        dropout=0.5,
+        activation="relu",
+        use_batchnorm=False,
+        k_value=2
+    ):
+        self.k_value = k_value
+        super().__init__(in_dim, hidden_dim, out_dim, num_layers, dropout, activation)
+
     def _build_layers(self):
         # SGC는 conv 하나만 필요함
         # K는 몇 번 propagation 할지 (보통 2~3)

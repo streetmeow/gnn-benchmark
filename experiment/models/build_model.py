@@ -67,6 +67,7 @@ def build_model(cfg, in_dim, out_dim):
             activation=activation
         )
     elif name == "sgc":
+        k_v = cfg.model.get("k_value", 2)
         return SGC(
             in_dim=in_dim,
             hidden_dim=hidden,  # 사실 사용 안 함
@@ -74,7 +75,8 @@ def build_model(cfg, in_dim, out_dim):
             num_layers=layers,
             dropout=dropout,
             activation=activation,
-            use_batchnorm=batchnorm
+            use_batchnorm=batchnorm,
+            k_value=k_v
         )
 
     else:

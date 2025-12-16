@@ -12,7 +12,7 @@ import wandb
 # --- '현장 감독' (Experiment) 클래스들을 임포트 ---
 # (이 파일들은 experiment/ 디렉토리에 있다고 가정)
 from scripts import BaseExperiment, Logger
-from scripts.experiments import SimpleExperiment
+from scripts.experiments import SimpleExperiment, CPFExperiment
 from scripts.loggers import BaseLogger
 import os
 
@@ -60,6 +60,8 @@ def run_experiment(cfg: DictConfig):
         #     experiment = DistillationExperiment(cfg)
 
         # experiment name 설정이 잘못 되어 있음
+        elif cfg.experiment.name == "cpf_base":
+            experiment = CPFExperiment(cfg, logger)
         else:
             raise ValueError(f"Unknown experiment name: {cfg.experiment.name}. Check 'configs/experiment/'")
 

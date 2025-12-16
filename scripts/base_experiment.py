@@ -367,7 +367,8 @@ class BaseExperiment(ABC):
     def run(self):
         log.info(f"--- Experiment Start: {self.__class__.__name__} ---")
         # 제일 먼저 모델 복잡도 추출 및 저장
-        self._profile_model_complexity()
+        if False:
+            self._profile_model_complexity()
 
         if self.cfg.experiment.get("mode", "train") == "train":
             # train 외의 다른 걸 지정하면 (test, evaluate 등등) 지정 모델에 대한 평가 하나만 진행

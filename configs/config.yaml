@@ -1,25 +1,26 @@
 # configs/config.yaml
 defaults:
-  - _self_
-  - experiment: experiment_base
+  - experiment: cpf_base
   - dataset: dataset_base
   - train: train_base
   - sampler: sampler_base
-  - model: model_base
+  - model: cpf_student
   - logging: logging_base
+  - teacher: gcn
+#  - teacher_train: train_base
+  - _self_
+
 seed: 5
 gpu_id: 2
-#checkpoint_path: /app/outputs/2025-11-22/10-05-27/best_checkpoint.pth
-#checkpoint_path: /app/outputs/2025-11-22/10-53-43/best_checkpoint.pth
-teacher_checkpoint: /app/outputs
+teacher_checkpoint: "/app"
+
+#teacher:
+#  model: gcn
+#  checkpoint: "/app"   # 기본값(런에서 override로 덮어씀)
 
 hydra:
-  # 1. 단일 실행 (python main.py ...)
   run:
     dir: outputs/${kst:%Y-%m-%d}/${kst:%H-%M-%S}
-
-  # 2. 다중 실행 (python main.py -m ...)
   sweep:
-    # 여기도 kst로 바꿔줘야 멀티런 폴더가 한국 시간으로 찍힘
     dir: multirun/${kst:%Y-%m-%d}/${kst:%H-%M-%S}
     subdir: ${hydra.job.num}

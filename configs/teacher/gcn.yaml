@@ -1,0 +1,11 @@
+# configs/model/gcn.yaml
+
+# 모델 타입
+name: gcn
+
+# 기본 하이퍼파라미터 (sweep에서 override 예정)
+num_layers: 2
+hidden_dim: 64
+dropout: 0.5
+activation: relu
+sizes: [15, 10]

@@ -43,6 +43,7 @@ class CPFExperiment(BaseExperiment):
             cfg,
             in_dim=in_dim,
             out_dim=num_classes,
+            model=cfg.teacher
         ).to(device)
 
         # Teacher checkpoint 필수

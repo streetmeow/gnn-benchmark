@@ -1,0 +1,11 @@
+# 실험의 명칭
+name: finding_test2
+epochs: 3
+lr: 0.01
+weight_decay: 5e-4
+use_distill: false
+use_scheduler: true
+kd_type: basic
+patience: 100
+use_batchnorm: false
+use_early_stopping: true

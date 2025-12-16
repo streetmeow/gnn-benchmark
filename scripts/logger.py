@@ -76,13 +76,15 @@ class Logger:
 
         # 1. Config에서 '재료'를 긁어옴 (스크립트에서 조립)
         model_name = cfg.model.name.replace("/", "_")
+        print(model_name)
         dataset_name = cfg.dataset.name.replace("/", "_")
         experiment_name = cfg.experiment.wandb_name
         seed = cfg.seed
         lr = cfg.train.lr
         layer_num = cfg.model.num_layers
+        teacher_name = cfg.teacher.name
         run_name = (
-            f"{model_name}_{dataset_name}_lr{lr}"
+            f"{model_name}_{teacher_name}_{dataset_name}_seed{seed}_lr{lr}"
             f"_ly{layer_num}_wd{cfg.train.weight_decay}"
             f"_dr{cfg.model.dropout}_hd{cfg.model.hidden_dim}"
         )

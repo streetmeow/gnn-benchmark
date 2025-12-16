@@ -1,0 +1,7 @@
+name: "graphsage"
+num_layers: 2
+hidden_dim: 64  # (Cora에는 16, 32, 64, 128 등 다양하게 사용됨)
+dropout: 0.6
+activation: "relu"
+aggr: "mean"
+sizes: [15, 10]

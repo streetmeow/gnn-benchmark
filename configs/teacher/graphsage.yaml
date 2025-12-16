@@ -1,0 +1,12 @@
+# configs/model/graphsage.yaml
+
+name: graphsage
+
+num_layers: 2
+hidden_dim: 64
+dropout: 0.5
+activation: relu
+sizes: [15, 10]
+
+# GraphSAGE 전용 옵션
+aggr: mean          # model_builder 에서 cfg.model.get("aggr", "mean")

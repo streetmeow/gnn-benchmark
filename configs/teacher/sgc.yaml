@@ -1,0 +1,9 @@
+# configs/model/gin.yaml
+
+name: sgc
+
+num_layers: 2
+hidden_dim: 64
+dropout: 0.5
+activation: relu
+sizes: [15, 10]

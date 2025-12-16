@@ -3,17 +3,17 @@
 from experiment.models.architectures import GCN, GAT, GraphSAGE, GIN, SGC
 
 
-def build_model(cfg, in_dim, out_dim):
+def build_model(cfg, in_dim, out_dim, model=None):
     """
     cfg.model 에 정의된 타입에 따라 적절한 GNN 모델을 생성.
     """
-
-    name = cfg.model.name.lower()
-    hidden = cfg.model.hidden_dim
-    layers = cfg.model.num_layers
-    dropout = cfg.model.dropout
+    m = model if model is not None else cfg.model
+    name = m.name.lower()
+    hidden = m.hidden_dim
+    layers = m.num_layers
+    dropout = m.dropout
     batchnorm = cfg.train.get("use_batchnorm", False)
-    activation = cfg.model.get("activation", "relu")  # 기본 relu
+    activation = m.get("activation", "relu")  # 기본 relu
 
     if name == "gcn":
         if batchnorm:
@@ -29,8 +29,8 @@ def build_model(cfg, in_dim, out_dim):
         )
 
     elif name == "gat":
-        heads = cfg.model.get("heads", 4)
-        concat = cfg.model.get("concat", False)
+        heads = m.get("heads", 4)
+        concat = m.get("concat", False)
 
         return GAT(
             in_dim=in_dim,
@@ -45,7 +45,7 @@ def build_model(cfg, in_dim, out_dim):
         )
 
     elif name == "graphsage":
-        aggr = cfg.model.get("aggr", "mean")
+        aggr = m.get("aggr", "mean")
 
         return GraphSAGE(
             in_dim=in_dim,

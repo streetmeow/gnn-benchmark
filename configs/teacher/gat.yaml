@@ -1,0 +1,14 @@
+# configs/model/gat.yaml
+
+name: gat
+
+# 기본 하이퍼파라미터
+num_layers: 2
+hidden_dim: 64      # per-head hidden dim이라고 생각하면 됨
+dropout: 0.6
+activation: elu
+
+# GAT 전용 옵션 (model_builder에서 get으로 읽음)
+heads: 4
+concat: false       # builder 기본값과 동일 (False), 필요하면 sweep/override
+sizes: [15, 10]

@@ -64,80 +64,84 @@ def run_cpf_experiments(target_datasets=None, target_teachers=None):
     print(f"🎯 CPF target pairs: {all_pairs}")
 
     with initialize(version_base=None, config_path="configs"):
-        for dataset, teacher_model in all_pairs:
-            for seed in range(1, 6):
-                teacher_cfg = CPF_TEACHER_TABLE[(dataset, teacher_model)]
+        for gam in [1.0, 3.0]:
+            for dataset, teacher_model in all_pairs:
+                for seed_num in range(1, 6):
+                    for lambda_gate in [0.0, 0.1, 0.3, 1.0]:
+                        teacher_cfg = CPF_TEACHER_TABLE[(dataset, teacher_model)]
 
-                epochs = EPOCH_TABLE[dataset]
-                patience = PATIENCE_TABLE[dataset]
+                        epochs = EPOCH_TABLE[dataset]
+                        patience = PATIENCE_TABLE[dataset]
 
-                print("\n===============================================")
-                print(f"🚀 CPF | dataset={dataset} | teacher={teacher_model}")
-                print(f"📦 checkpoint={teacher_cfg['checkpoint']} | seed={seed}")
-                print("===============================================\n")
+                        print("\n===============================================")
+                        print(f"🚀 CPF | dataset={dataset} | teacher={teacher_model}")
+                        print(f"📦 checkpoint={teacher_cfg['checkpoint']} | seed={seed_num}")
+                        print("===============================================\n")
 
-                overrides = [
-                    # --------------------------------------------------
-                    # experiment
-                    # --------------------------------------------------
-                    # "experiment=cpf",
+                        overrides = [
+                            # --------------------------------------------------
+                            # experiment
+                            # --------------------------------------------------
+                            # "experiment=cpf",
 
-                    # --------------------------------------------------
-                    # dataset (CPF는 full-batch 가정)
-                    # --------------------------------------------------
-                    f"dataset={dataset}",
-                    "dataset.use_sampler=false",
+                            # --------------------------------------------------
+                            # dataset (CPF는 full-batch 가정)
+                            # --------------------------------------------------
+                            f"dataset={dataset}",
+                            "dataset.use_sampler=false",
 
-                    # --------------------------------------------------
-                    # teacher (여기가 핵심 수정 포인트)
-                    # --------------------------------------------------
-                    f"teacher={teacher_cfg['model']}",                  # config group
-                    f"teacher_checkpoint={teacher_cfg['checkpoint']}",
-                    f"teacher.num_layers={teacher_cfg['num_layers']}",
-                    f"teacher.hidden_dim={teacher_cfg['hidden_dim']}",
-                    f"teacher.dropout={teacher_cfg['dropout']}",
-                    # f"teacher.lr={teacher_cfg['lr']}",
-                    # f"teacher.weight_decay={teacher_cfg['weight_decay']}",
+                            # --------------------------------------------------
+                            # teacher (여기가 핵심 수정 포인트)
+                            # --------------------------------------------------
+                            f"teacher={teacher_cfg['model']}",                  # config group
+                            f"teacher_checkpoint={teacher_cfg['checkpoint']}",
+                            f"teacher.num_layers={teacher_cfg['num_layers']}",
+                            f"teacher.hidden_dim={teacher_cfg['hidden_dim']}",
+                            f"teacher.dropout={teacher_cfg['dropout']}",
+                            # f"teacher.lr={teacher_cfg['lr']}",
+                            # f"teacher.weight_decay={teacher_cfg['weight_decay']}",
 
-                    # --------------------------------------------------
-                    # student (CPF, 고정)
-                    # --------------------------------------------------
-                    f"model.hidden_dim={CPF_STUDENT_CONFIG['hidden_dim']}",
-                    f"model.dropout={CPF_STUDENT_CONFIG['dropout']}",
-                    # f"+model.plp_steps={CPF_STUDENT_CONFIG['plp_steps']}",
+                            # --------------------------------------------------
+                            # student (CPF, 고정)
+                            # --------------------------------------------------
+                            f"model.hidden_dim={CPF_STUDENT_CONFIG['hidden_dim']}",
+                            f"model.dropout={CPF_STUDENT_CONFIG['dropout']}",
+                            # f"+model.plp_steps={CPF_STUDENT_CONFIG['plp_steps']}",
 
-                    # --------------------------------------------------
-                    # training (student only)
-                    # --------------------------------------------------
-                    f"train.lr={CPF_STUDENT_CONFIG['lr']}",
-                    f"train.weight_decay={CPF_STUDENT_CONFIG['weight_decay']}",
-                    f"train.epochs={epochs}",
-                    f"train.patience={patience}",
-                    "train.use_early_stopping=true",
+                            # --------------------------------------------------
+                            # training (student only)
+                            # --------------------------------------------------
+                            f"train.lr={CPF_STUDENT_CONFIG['lr']}",
+                            f"train.weight_decay={CPF_STUDENT_CONFIG['weight_decay']}",
+                            f"train.epochs={epochs}",
+                            f"train.patience={patience}",
+                            f"train.lambda_gate={lambda_gate}",
+                            f"train.gamma={gam}",
+                            "train.use_early_stopping=true",
 
-                    # --------------------------------------------------
-                    # system
-                    # --------------------------------------------------
-                    f"seed={seed}",
-                    "gpu_id=0",
-                ]
+                            # --------------------------------------------------
+                            # system
+                            # --------------------------------------------------
+                            f"seed={seed_num}",
+                            "gpu_id=0",
+                        ]
 
-                try:
-                    gc.collect()
-                    torch.cuda.empty_cache()
-                    if torch.cuda.is_available():
-                        torch.cuda.synchronize()
+                        try:
+                            gc.collect()
+                            torch.cuda.empty_cache()
+                            if torch.cuda.is_available():
+                                torch.cuda.synchronize()
 
-                    cfg = compose(config_name="config", overrides=overrides)
-                    run_experiment(cfg)
+                            cfg = compose(config_name="config", overrides=overrides)
+                            run_experiment(cfg)
 
-                except Exception as e:
-                    print(f"❌ CPF Error @ {dataset}/{teacher_model}: {e}")
-                    traceback.print_exc()
+                        except Exception as e:
+                            print(f"❌ CPF Error @ {dataset}/{teacher_model}: {e}")
+                            traceback.print_exc()
 
-                finally:
-                    gc.collect()
-                    torch.cuda.empty_cache()
+                        finally:
+                            gc.collect()
+                            torch.cuda.empty_cache()
 
 
 

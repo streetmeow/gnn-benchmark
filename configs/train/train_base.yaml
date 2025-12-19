@@ -9,3 +9,5 @@ kd_type: basic
 patience: 100
 use_batchnorm: false
 use_early_stopping: true
+lambda_gate: 0.1
+gamma: 3

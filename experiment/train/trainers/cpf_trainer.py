@@ -27,6 +27,8 @@ class CPFTrainer(BaseTrainer):
         device: torch.device,
         teacher_logits: torch.Tensor,
         data_full: Data,
+        lambda_gate: float,
+        gamma: float,
         **kwargs,
     ):
         """
@@ -41,6 +43,8 @@ class CPFTrainer(BaseTrainer):
         super().__init__(model, optimizer, evaluator, device, **kwargs)
 
         self.data_full = data_full
+        self.lambda_gate = lambda_gate
+        self.gamma = gamma
 
         # Teacher probs (no temperature; 원본 CPF와 동일하게 사용)
         self.teacher_logits = teacher_logits.to(device)        # (N, C)
@@ -66,31 +70,102 @@ class CPFTrainer(BaseTrainer):
                 hard_one_hot=self.hard_one_hot,
             )
 
+    # def _compute_loss(self, batch: Data) -> tuple[torch.Tensor, dict]:
+    #     """
+    #     BaseTrainer.train_epoch에서 호출되는 손실 계산 함수.
+    #
+    #     여기서는 full-batch만 지원한다고 가정 (Cornell/Texas/Planetoid 등).
+    #     """
+    #     # batch = batch.to(self.device)  # full-batch일 때도 안전하게
+    #
+    #     # 1) Student forward (CPFStudent)
+    #     logits = self.model(batch.x, batch.edge_index)  # (N, C)
+    #
+    #     # 2) KD loss (unlabeled nodes 기준으로 KL)
+    #     # student_log_probs = F.log_softmax(logits, dim=-1)
+    #
+    #     idx_no_train = ~self.train_mask  # True = unlabeled nodes
+    #     kd_loss = F.mse_loss(
+    #         logits[idx_no_train],
+    #         self.teacher_probs[idx_no_train],
+    #     )
+    #
+    #     loss = kd_loss
+    #
+    #     log_dict = {
+    #         "loss_total": loss.item(),
+    #         "loss_kd": kd_loss.item(),
+    #     }
+    #
+    #     return loss, log_dict
+
     def _compute_loss(self, batch: Data) -> tuple[torch.Tensor, dict]:
         """
-        BaseTrainer.train_epoch에서 호출되는 손실 계산 함수.
-
-        여기서는 full-batch만 지원한다고 가정 (Cornell/Texas/Planetoid 등).
+        CPF + Gate regularization loss.
+        Full-batch only.
         """
-        # batch = batch.to(self.device)  # full-batch일 때도 안전하게
 
-        # 1) Student forward (CPFStudent)
+        # --------------------------------------------------
+        # 1) Student forward
+        # --------------------------------------------------
         logits = self.model(batch.x, batch.edge_index)  # (N, C)
 
-        # 2) KD loss (unlabeled nodes 기준으로 KL)
-        # student_log_probs = F.log_softmax(logits, dim=-1)
-
-        idx_no_train = ~self.train_mask  # True = unlabeled nodes
+        # --------------------------------------------------
+        # 2) KD loss (unlabeled nodes)
+        # --------------------------------------------------
+        idx_no_train = ~self.train_mask
         kd_loss = F.mse_loss(
             logits[idx_no_train],
             self.teacher_probs[idx_no_train],
         )
 
-        loss = kd_loss
+        alpha = torch.sigmoid(self.model.alpha).squeeze()  # (N,)
+        pseudo_labels = torch.argmax(self.teacher_probs, dim=-1)  # (N,)
+
+        row, col = batch.edge_index  # (2, E)
+
+        # disagreement indicator
+        disagree = (pseudo_labels[row] != pseudo_labels[col]).float()
+
+        # weight: agreement=1, disagreement=gamma
+        gamma = self.gamma
+        edge_weight = torch.ones_like(disagree)
+        edge_weight[disagree.bool()] = gamma
+
+        # weighted disagreement sum
+        num_nodes = batch.num_nodes
+        deg_w = torch.zeros(num_nodes, device=alpha.device)
+        deg_w.index_add_(0, row, edge_weight)
+
+        dis_w = torch.zeros(num_nodes, device=alpha.device)
+        dis_w.index_add_(0, row, edge_weight * disagree)
+
+        # weighted disagreement ratio h_i
+        h_i = dis_w / (deg_w + 1e-6)  # (N,)
+
+        # gate target: homophily proxy = 1 - heterophily
+        target = 1.0 - h_i
+
+        # unlabeled-only gate loss
+        idx_no_train = ~self.train_mask
+        gate_loss = F.mse_loss(alpha[idx_no_train], target[idx_no_train])
+
+        # --------------------------------------------------
+        # 4) Total loss
+        # --------------------------------------------------
+        lambda_gate = getattr(self, "lambda_gate", 1.0)
+        loss = kd_loss + lambda_gate * gate_loss
 
         log_dict = {
             "loss_total": loss.item(),
             "loss_kd": kd_loss.item(),
+            "loss_gate": gate_loss.item(),
+            "alpha_mean": alpha.mean().item(),
+            # "homophily_mean": s_i.mean().item(),
+            "alpha_std": alpha.std().item(),
+            "hetero_mean": h_i.mean().item(),
+            "hetero_std": h_i.std().item(),
         }
 
         return loss, log_dict
+

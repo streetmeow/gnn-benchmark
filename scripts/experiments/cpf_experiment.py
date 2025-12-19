@@ -134,6 +134,8 @@ class CPFExperiment(BaseExperiment):
             save_checkpoint=cfg.experiment.save_checkpoint,
             patience=cfg.train.patience,
             use_early_stopping=cfg.train.use_early_stopping,
+            lambda_gate=cfg.train.get("lambda_gate", 0.1),
+            gamma=cfg.train.get("gamma", 1),
         )
 
         # -------------------------

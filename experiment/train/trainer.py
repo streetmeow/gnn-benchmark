@@ -58,6 +58,7 @@ class BaseTrainer(ABC):
     def train_epoch(self, loader: Iterable, mode: Literal["full", "mini"]):
         self.model.train()
         self.train_loss_metric.reset()
+        self.extra_train_metrics = {}
 
         for batch in tqdm(loader, desc="Training Epoch"):
             batch = batch.to(self.device)
@@ -76,8 +77,13 @@ class BaseTrainer(ABC):
             else:
                 num_samples = batch.batch_size
             self.train_loss_metric.update(loss, weight=num_samples)
-
-        return {"loss_avg": self.train_loss_metric.compute().item()}
+            for k, v in log_dict.items():
+                if k not in self.extra_train_metrics:
+                    self.extra_train_metrics[k] = []
+                self.extra_train_metrics[k].append(v)
+        epoch_logs = {k: sum(v) / len(v) for k, v in self.extra_train_metrics.items()}
+        epoch_logs["loss_avg"] = self.train_loss_metric.compute().item()
+        return epoch_logs
 
     def validate(self, loader: Iterable, mode: Literal["full", "mini"], data_full: Optional[Data] = None):
         mask = None

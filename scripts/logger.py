@@ -84,7 +84,7 @@ class Logger:
         layer_num = cfg.model.num_layers
         teacher_name = cfg.teacher.name
         run_name = (
-            f"{model_name}_{teacher_name}_{dataset_name}_seed{seed}_lr{lr}"
+            f"g{cfg.train.gamma}_lg{cfg.train.lambda_gate}_{teacher_name}_{dataset_name}_seed{seed}_lr{lr}"
             f"_ly{layer_num}_wd{cfg.train.weight_decay}"
             f"_dr{cfg.model.dropout}_hd{cfg.model.hidden_dim}"
         )
